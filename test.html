@@ -5,6 +5,14 @@
 <script type="text/javascript">
 (function($) {
 	$(document).ready(function() {
+		var wall = "#";
+		var player = "@";
+		var playerOnGoal = "+";
+		var box = "$";
+		var boxOnGoal = "*";
+		var goal = ".";
+		var floor = " ";
+
 		var playerx = 10;
 		var playery = 10;
 		var board = null;
@@ -18,13 +26,17 @@
 			for(var row=0;row<rows;++row){
 				var columns = [];
 				for(var col=0;col<cols;++col){
-					var cellvalue = " ";
-					if(row == 0 || row == rows-1 || col == 0 || col == cols-1) cellvalue = "#";
-					if(row == playery && col == playerx) cellvalue = "@";
+					var cellvalue = floor;
+					if(row == 0 || row == rows-1 || col == 0 || col == cols-1) cellvalue = wall;
 					columns[col] = cellvalue;
 				}
 				board[row] = columns;
 			}
+
+			board[playery][playerx] = player;
+			board[playery-1][playerx] = box;
+			board[playery-2][playerx] = goal;
+
 			rowcount = board.length;
 			colcount = board[0].length;
 		}
@@ -43,28 +55,59 @@
 			$("#game").html(html);
 		};
 
-		function drawUpdate(playery, playerx, newplayery, newplayerx)
-		{
-			$("#row" + newplayery + "col" + newplayerx).html("@");
-			$("#row" + playery + "col" + playerx).html(" ");
+		function getCellHtml(row, col) {
+			return board[row][col];
+		}
+
+		function drawUpdate(playery, playerx, newplayery, newplayerx, newboxy, newboxx) {
+			if(newboxy != null && newboxx != null) $("#row" + newboxy + "col" + newboxx).html(getCellHtml(newboxy,newboxx));
+			$("#row" + newplayery + "col" + newplayerx).html(getCellHtml(newplayery,newplayerx));
+			$("#row" + playery + "col" + playerx).html(getCellHtml(playery,playerx));
+		}
+
+		function checkGameEnd() {
+			for(var row=0;row<=rowcount;++row) {
+				for(var col=0;col<=colcount;++col) {
+					if (board[row][col] == box) {
+						return;
+					}	
+				}
+			}	
+			alert("you completed the game.");
+			initBoard();
+			drawBoard();
 		}
 
 		initBoard();
 		drawBoard();
 
 		$(document).keydown(function(e) {
-				var newplayerx = playerx;
-				var newplayery = playery;
-				if(e.keyCode==37) newplayerx--;
-				if(e.keyCode==38) newplayery--;
-				if(e.keyCode==39) newplayerx++;
-				if(e.keyCode==40) newplayery++;
-				if(board[newplayery][newplayerx] == "#")return;
-				board[playery][playerx] = " ";				
-				board[newplayery][newplayerx] = "@";
-				drawUpdate(playery, playerx, newplayery, newplayerx);
+				var dx = 0;
+				var dy = 0;
+				if(e.keyCode==37) dx = -1;
+				if(e.keyCode==38) dy = -1;
+				if(e.keyCode==39) dx = 1;
+				if(e.keyCode==40) dy = 1;
+				var playervalue = board[playery][playerx];
+				var newplayerx = playerx + dx;
+				var newplayery = playery + dy;
+				var newplayervalue = board[newplayery][newplayerx];
+				var newboxx = null;
+				var newboxy = null;
+				if(newplayervalue == wall) return;
+				if(newplayervalue == box || newplayervalue == boxOnGoal) {
+					newboxx = newplayerx + dx;
+					newboxy = newplayery + dy;
+					var newboxvalue = board[newboxy][newboxx];
+					if(newboxvalue != floor && newboxvalue != goal) return;
+					board[newboxy][newboxx] = newboxvalue == goal ? boxOnGoal : box;
+				}
+				board[playery][playerx] = playervalue == playerOnGoal ? goal : floor;				
+				board[newplayery][newplayerx] = newplayervalue == boxOnGoal || newplayervalue == goal ? playerOnGoal : player;
+				drawUpdate(playery, playerx, newplayery, newplayerx, newboxy, newboxx);
 				playerx=newplayerx;
 				playery=newplayery;
+				checkGameEnd();
 		});
 	});
 })(jQuery);
