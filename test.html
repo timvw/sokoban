@@ -1,0 +1,81 @@
+<html>
+<head>
+<title>my first page</title>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+<script type="text/javascript">
+(function($) {
+	$(document).ready(function() {
+		var playerx = 10;
+		var playery = 10;
+		var board = null;
+		var rowcount = 0;
+		var colcount = 0;
+
+		function initBoard() {
+			board = [];
+			var rows=20;
+			var cols=30;
+			for(var row=0;row<rows;++row){
+				var columns = [];
+				for(var col=0;col<cols;++col){
+					var cellvalue = " ";
+					if(row == 0 || row == rows-1 || col == 0 || col == cols-1) cellvalue = "#";
+					if(row == playery && col == playerx) cellvalue = "@";
+					columns[col] = cellvalue;
+				}
+				board[row] = columns;
+			}
+			rowcount = board.length;
+			colcount = board[0].length;
+		}
+
+		function drawBoard() {
+			var html="<table>";
+			for(var row=0;row<rowcount;++row) {
+				html += "<tr>";
+				for(var col=0;col<colcount;++col) {
+					html += "<td id='row" + row +"col" +col +"' class='gamecell'>" + board[row][col] + "</td>";
+				}
+				html += "</tr>";
+			}
+			html += "</table>";
+
+			$("#game").html(html);
+		};
+
+		function drawUpdate(playery, playerx, newplayery, newplayerx)
+		{
+			$("#row" + newplayery + "col" + newplayerx).html("@");
+			$("#row" + playery + "col" + playerx).html(" ");
+		}
+
+		initBoard();
+		drawBoard();
+
+		$(document).keydown(function(e) {
+				var newplayerx = playerx;
+				var newplayery = playery;
+				if(e.keyCode==37) newplayerx--;
+				if(e.keyCode==38) newplayery--;
+				if(e.keyCode==39) newplayerx++;
+				if(e.keyCode==40) newplayery++;
+				if(board[newplayery][newplayerx] == "#")return;
+				board[playery][playerx] = " ";				
+				board[newplayery][newplayerx] = "@";
+				drawUpdate(playery, playerx, newplayery, newplayerx);
+				playerx=newplayerx;
+				playery=newplayery;
+		});
+	});
+})(jQuery);
+</script>
+<style>
+.gamecell { width: 20px; height: 20px; background-color: lightgrey; }
+</style>
+</head>
+<body>
+	<form>
+		<div id="game"></div>
+	</form>
+</body>
+</html>
