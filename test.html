@@ -13,14 +13,17 @@
 		var goal = ".";
 		var floor = " ";
 
-		var playerx = 10;
-		var playery = 10;
-		var board = null;
-		var rowcount = 0;
-		var colcount = 0;
+		var playerx;
+		var playery;
+		var board;
+		var rowcount;
+		var colcount;
 
 		function initBoard() {
+			playerx = 10;
+			playery = 10;
 			board = [];
+
 			var rows=20;
 			var cols=30;
 			for(var row=0;row<rows;++row){
@@ -32,7 +35,7 @@
 				}
 				board[row] = columns;
 			}
-
+			
 			board[playery][playerx] = player;
 			board[playery-1][playerx] = box;
 			board[playery-2][playerx] = goal;
@@ -65,17 +68,15 @@
 			$("#row" + playery + "col" + playerx).html(getCellHtml(playery,playerx));
 		}
 
-		function checkGameEnd() {
-			for(var row=0;row<=rowcount;++row) {
-				for(var col=0;col<=colcount;++col) {
+		function isCompleted() {
+			for(var row=0;row<rowcount;++row) {
+				for(var col=0;col<colcount;++col) {
 					if (board[row][col] == box) {
-						return;
+						return false;
 					}	
 				}
 			}	
-			alert("you completed the game.");
-			initBoard();
-			drawBoard();
+			return true;
 		}
 
 		initBoard();
@@ -107,7 +108,11 @@
 				drawUpdate(playery, playerx, newplayery, newplayerx, newboxy, newboxx);
 				playerx=newplayerx;
 				playery=newplayery;
-				checkGameEnd();
+				if (isCompleted()) {
+					alert("Congratulations. You completed this level");
+					initBoard();
+					drawBoard();
+				}
 		});
 	});
 })(jQuery);
