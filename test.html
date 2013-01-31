@@ -38,7 +38,11 @@
 			
 			board[playery][playerx] = player;
 			board[playery-1][playerx] = box;
+			board[playery-1][playerx-1] = box;
 			board[playery-2][playerx] = goal;
+			board[playery-2][playerx-1] = goal;
+			board[playery-3][playerx-1] = goal;
+			board[playery-3][playerx-2] = boxOnGoal;
 
 			rowcount = board.length;
 			colcount = board[0].length;
