@@ -4,56 +4,56 @@
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
 <script type="text/javascript">
 (function($) {
-	$(document).ready(function() {
-		var wall = "#";
-		var player = "@";
-		var playerOnGoal = "+";
-		var box = "$";
-		var boxOnGoal = "*";
-		var goal = ".";
-		var floor = " ";
+	function Game() {
+		this.wall = "#";
+		this.player = "@";
+		this.playerOnGoal = "+";
+		this.box = "$";
+		this.boxOnGoal = "*";
+		this.goal = ".";
+		this.floor = " ";
 
-		var playerx;
-		var playery;
-		var board;
-		var rowcount;
-		var colcount;
+		this.playerx;
+		this.playery;
+		this.board;
+		this.rowcount;
+		this.colcount;
 
-		function initBoard() {
-			playerx = 10;
-			playery = 10;
-			board = [];
+		this.initBoard = function() {
+			this.playerx = 10;
+			this.playery = 10;
+			this.board = [];
 
 			var rows=20;
 			var cols=30;
 			for(var row=0;row<rows;++row){
 				var columns = [];
 				for(var col=0;col<cols;++col){
-					var cellvalue = floor;
-					if(row == 0 || row == rows-1 || col == 0 || col == cols-1) cellvalue = wall;
+					var cellvalue = this.floor;
+					if(row == 0 || row == rows-1 || col == 0 || col == cols-1) cellvalue = this.wall;
 					columns[col] = cellvalue;
 				}
-				board[row] = columns;
+				this.board[row] = columns;
 			}
 			
-			board[playery][playerx] = player;
-			board[playery-1][playerx] = box;
-			board[playery-1][playerx-1] = box;
-			board[playery-2][playerx] = goal;
-			board[playery-2][playerx-1] = goal;
-			board[playery-3][playerx-1] = goal;
-			board[playery-3][playerx-2] = boxOnGoal;
+			this.board[this.playery][this.playerx] = this.player;
+			this.board[this.playery-1][this.playerx] = this.box;
+			this.board[this.playery-1][this.playerx-1] = this.box;
+			this.board[this.playery-2][this.playerx] = this.goal;
+			this.board[this.playery-2][this.playerx-1] = this.goal;
+			this.board[this.playery-3][this.playerx-1] = this.goal;
+			this.board[this.playery-3][this.playerx-2] = this.boxOnGoal;
 
-			rowcount = board.length;
-			colcount = board[0].length;
+			this.rowcount = this.board.length;
+			this.colcount = this.board[0].length;
 		}
 
-		function drawBoard() {
+		this.drawBoard = function() {
 			var html="<table>";
-			for(var row=0;row<rowcount;++row) {
+			for(var row=0;row<this.rowcount;++row) {
 				html += "<tr>";
-				for(var col=0;col<colcount;++col) {
-					html += "<td id='row" + row +"col" +col +"' class='gamecell'>" + getCellHtml(row,col) + "</td>";
+				for(var col=0;col<this.colcount;++col) {
+					html += "<td id='row" + row +"col" +col +"' class='gamecell'>" + this.getCellHtml(row,col) + "</td>";
 				}
 				html += "</tr>";
 			}
@@ -62,20 +62,20 @@
 			$("#game").html(html);
 		};
 
-		function getCellHtml(row, col) {
-			return board[row][col];
+		this.getCellHtml = function(row, col) {
+			return this.board[row][col];
 		}
 
-		function drawUpdate(playery, playerx, newplayery, newplayerx, newboxy, newboxx) {
-			if(newboxy != null && newboxx != null) $("#row" + newboxy + "col" + newboxx).html(getCellHtml(newboxy,newboxx));
-			$("#row" + newplayery + "col" + newplayerx).html(getCellHtml(newplayery,newplayerx));
-			$("#row" + playery + "col" + playerx).html(getCellHtml(playery,playerx));
+		this.drawUpdate = function(playery, playerx, newplayery, newplayerx, newboxy, newboxx) {
+			if(newboxy != null && newboxx != null) $("#row" + newboxy + "col" + newboxx).html(this.getCellHtml(newboxy,newboxx));
+			$("#row" + newplayery + "col" + newplayerx).html(this.getCellHtml(newplayery,newplayerx));
+			$("#row" + playery + "col" + playerx).html(this.getCellHtml(playery,playerx));
 		}
 
-		function isCompleted() {
-			for(var row=0;row<rowcount;++row) {
-				for(var col=0;col<colcount;++col) {
-					if (board[row][col] == box) {
+		this.isCompleted = function() {
+			for(var row=0;row<this.rowcount;++row) {
+				for(var col=0;col<this.colcount;++col) {
+					if (this.board[row][col] == this.box) {
 						return false;
 					}	
 				}
@@ -83,35 +83,39 @@
 			return true;
 		}
 
-		function move(dy, dx) {
-			var playervalue = board[playery][playerx];
-			var newplayerx = playerx + dx;
-			var newplayery = playery + dy;
-			var newplayervalue = board[newplayery][newplayerx];
+		this.move = function(dy, dx) {
+			var playervalue = this.board[this.playery][this.playerx];
+			var newplayerx = this.playerx + dx;
+			var newplayery = this.playery + dy;
+			var newplayervalue = this.board[newplayery][newplayerx];
 			var newboxx = null;
 			var newboxy = null;
-			if(newplayervalue == wall) return;
-			if(newplayervalue == box || newplayervalue == boxOnGoal) {
+			if(newplayervalue == this.wall) return;
+			if(newplayervalue == this.box || newplayervalue == this.boxOnGoal) {
 				newboxx = newplayerx + dx;
 				newboxy = newplayery + dy;
-				var newboxvalue = board[newboxy][newboxx];
-				if(newboxvalue != floor && newboxvalue != goal) return;
-				board[newboxy][newboxx] = newboxvalue == goal ? boxOnGoal : box;
+				var newboxvalue = this.board[newboxy][newboxx];
+				if(newboxvalue != this.floor && newboxvalue != this.goal) return;
+				this.board[newboxy][newboxx] = newboxvalue == this.goal ? this.boxOnGoal : this.box;
 			}
-			board[playery][playerx] = playervalue == playerOnGoal ? goal : floor;				
-			board[newplayery][newplayerx] = newplayervalue == boxOnGoal || newplayervalue == goal ? playerOnGoal : player;
-			drawUpdate(playery, playerx, newplayery, newplayerx, newboxy, newboxx);
-			playerx=newplayerx;
-			playery=newplayery;
-			if (isCompleted()) {
+			this.board[this.playery][this.playerx] = playervalue == this.playerOnGoal ? this.goal : this.floor;				
+			this.board[newplayery][newplayerx] = newplayervalue == this.boxOnGoal || newplayervalue == this.goal ? this.playerOnGoal : this.player;
+			this.drawUpdate(this.playery, this.playerx, newplayery, newplayerx, newboxy, newboxx);
+			this.playerx=newplayerx;
+			this.playery=newplayery;
+			if (this.isCompleted()) {
 				alert("Congratulations. You completed this level");
-				initBoard();
-				drawBoard();
+				this.initBoard();
+				this.drawBoard();
 			}
 		}
+	}
 
-		initBoard();
-		drawBoard();
+
+ 	$(document).ready(function() {
+		var game = new Game();
+		game.initBoard();
+		game.drawBoard();
 
 		$(document).keydown(function(e) {
 			var dx = 0;
@@ -120,7 +124,7 @@
 			if(e.keyCode==38) dy = -1;
 			if(e.keyCode==39) dx = 1;
 			if(e.keyCode==40) dy = 1;
-			move(dy,dx);
+			game.move(dy,dx);
 		});
 	});
 })(jQuery);
