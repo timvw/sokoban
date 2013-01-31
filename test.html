@@ -49,7 +49,7 @@
 			for(var row=0;row<rowcount;++row) {
 				html += "<tr>";
 				for(var col=0;col<colcount;++col) {
-					html += "<td id='row" + row +"col" +col +"' class='gamecell'>" + board[row][col] + "</td>";
+					html += "<td id='row" + row +"col" +col +"' class='gamecell'>" + getCellHtml(board[row][col]) + "</td>";
 				}
 				html += "</tr>";
 			}
