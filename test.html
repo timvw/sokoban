@@ -49,7 +49,7 @@
 			for(var row=0;row<rowcount;++row) {
 				html += "<tr>";
 				for(var col=0;col<colcount;++col) {
-					html += "<td id='row" + row +"col" +col +"' class='gamecell'>" + getCellHtml(board[row][col]) + "</td>";
+					html += "<td id='row" + row +"col" +col +"' class='gamecell'>" + getCellHtml(row,col) + "</td>";
 				}
 				html += "</tr>";
 			}
@@ -79,40 +79,44 @@
 			return true;
 		}
 
+		function move(dy, dx) {
+			var playervalue = board[playery][playerx];
+			var newplayerx = playerx + dx;
+			var newplayery = playery + dy;
+			var newplayervalue = board[newplayery][newplayerx];
+			var newboxx = null;
+			var newboxy = null;
+			if(newplayervalue == wall) return;
+			if(newplayervalue == box || newplayervalue == boxOnGoal) {
+				newboxx = newplayerx + dx;
+				newboxy = newplayery + dy;
+				var newboxvalue = board[newboxy][newboxx];
+				if(newboxvalue != floor && newboxvalue != goal) return;
+				board[newboxy][newboxx] = newboxvalue == goal ? boxOnGoal : box;
+			}
+			board[playery][playerx] = playervalue == playerOnGoal ? goal : floor;				
+			board[newplayery][newplayerx] = newplayervalue == boxOnGoal || newplayervalue == goal ? playerOnGoal : player;
+			drawUpdate(playery, playerx, newplayery, newplayerx, newboxy, newboxx);
+			playerx=newplayerx;
+			playery=newplayery;
+			if (isCompleted()) {
+				alert("Congratulations. You completed this level");
+				initBoard();
+				drawBoard();
+			}
+		}
+
 		initBoard();
 		drawBoard();
 
 		$(document).keydown(function(e) {
-				var dx = 0;
-				var dy = 0;
-				if(e.keyCode==37) dx = -1;
-				if(e.keyCode==38) dy = -1;
-				if(e.keyCode==39) dx = 1;
-				if(e.keyCode==40) dy = 1;
-				var playervalue = board[playery][playerx];
-				var newplayerx = playerx + dx;
-				var newplayery = playery + dy;
-				var newplayervalue = board[newplayery][newplayerx];
-				var newboxx = null;
-				var newboxy = null;
-				if(newplayervalue == wall) return;
-				if(newplayervalue == box || newplayervalue == boxOnGoal) {
-					newboxx = newplayerx + dx;
-					newboxy = newplayery + dy;
-					var newboxvalue = board[newboxy][newboxx];
-					if(newboxvalue != floor && newboxvalue != goal) return;
-					board[newboxy][newboxx] = newboxvalue == goal ? boxOnGoal : box;
-				}
-				board[playery][playerx] = playervalue == playerOnGoal ? goal : floor;				
-				board[newplayery][newplayerx] = newplayervalue == boxOnGoal || newplayervalue == goal ? playerOnGoal : player;
-				drawUpdate(playery, playerx, newplayery, newplayerx, newboxy, newboxx);
-				playerx=newplayerx;
-				playery=newplayery;
-				if (isCompleted()) {
-					alert("Congratulations. You completed this level");
-					initBoard();
-					drawBoard();
-				}
+			var dx = 0;
+			var dy = 0;
+			if(e.keyCode==37) dx = -1;
+			if(e.keyCode==38) dy = -1;
+			if(e.keyCode==39) dx = 1;
+			if(e.keyCode==40) dy = 1;
+			move(dy,dx);
 		});
 	});
 })(jQuery);
