@@ -13,6 +13,7 @@
 		this.goal = ".";
 		this.floor = " ";
 
+		this.level = 1;
 		this.playerx;
 		this.playery;
 		this.board;
@@ -104,9 +105,14 @@
 			this.playerx=newplayerx;
 			this.playery=newplayery;
 			if (this.isCompleted()) {
-				alert("Congratulations. You completed this level");
-				this.initBoard();
-				this.drawBoard();
+				if(this.level <= 50){
+					alert("Congratulations. You completed this level");
+					this.level++;
+					this.initBoard();
+					this.drawBoard();
+				} else {
+					alert("Congratulations. You completed this game");
+				}
 			}
 		}
 	}
