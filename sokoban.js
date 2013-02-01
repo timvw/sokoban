@@ -84,7 +84,14 @@ function Game(gameData) {
 	};
 
 	this.getCellHtml = function(row, col) {
-		return this.board[row][col] ? this.board[row][col] : " ";
+		var cellValue = this.board[row][col] ? this.board[row][col] : this.floor;
+		if(cellValue == this.player) return "<img src='./images/player.png'/>";
+		if(cellValue == this.playerOnGoal) return "<img src='./images/playerOnGoal.png'/>";
+		if(cellValue == this.box) return "<img src='./images/box.png'/>";
+		if(cellValue == this.boxOnGoal) return "<img src='./images/boxOnGoal.png'/>";
+		if(cellValue == this.wall) return "<img src='./images/wall.png'/>";
+		if(cellValue == this.goal) return "<img src='./images/goal.png'/>";
+		if(cellValue == this.floor) return "&nbsp;";
 	}
 
 	this.drawUpdate = function(playery, playerx, newplayery, newplayerx, newboxy, newboxx) {
