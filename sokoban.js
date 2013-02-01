@@ -1,4 +1,6 @@
-function Game() {
+function Game(gameData) {
+	this.gameData = gameData;
+
 	this.wall = "#";
 	this.player = "@";
 	this.playerOnGoal = "+";
@@ -14,33 +16,57 @@ function Game() {
 	this.rowcount;
 	this.colcount;
 
+	// load some data...
+	var levelCountXPath = "count(//Level)";
+	var levelCountResult = this.gameData.evaluate(levelCountXPath, this.gameData, null, XPathResult.NUMBER_TYPE,null);
+	this.maxlevel = levelCountResult.numberValue;
+
 	this.initBoard = function() {
-		this.playerx = 10;
-		this.playery = 10;
 		this.board = [];
 
-		var rows=20;
-		var cols=30;
-		for(var row=0;row<rows;++row){
+		var rowCountXPath = "//Level[@Id='" + this.level + "']/@Height";
+		var rowCountResult = this.gameData.evaluate(rowCountXPath, this.gameData, null, XPathResult.NUMBER_TYPE, null);
+		this.rowcount = rowCountResult.numberValue;
+
+		var colCountXPath = "//Level[@Id='" + this.level + "']/@Width";
+		var colCountResult = this.gameData.evaluate(colCountXPath, this.gameData, null, XPathResult.NUMBER_TYPE,null);
+		this.colcount = colCountResult.numberValue;
+
+		var levelLinesXPath = "//Level[@Id='" + this.level + "']/L";
+		var levelLinesResult = this.gameData.evaluate(levelLinesXPath, this.gameData, null, XPathResult.ANY_TYPE, null);	
+		var line = levelLinesResult.iterateNext();
+		
+		var row = 0;
+		while(line) {
 			var columns = [];
-			for(var col=0;col<cols;++col){
-				var cellvalue = this.floor;
-				if(row == 0 || row == rows-1 || col == 0 || col == cols-1) cellvalue = this.wall;
-				columns[col] = cellvalue;
+
+			var lineText = line.textContent;
+			for(var col=0;col<lineText.length;++col) {
+				var cellValue = lineText.charAt(col);
+				columns[col] = cellValue;	
+				if(cellValue == this.player || cellValue == this.playerOnGoal) {
+					this.playerx = col;
+					this.playery = row;
+				}
 			}
+
+			for(var col = lineText.length;col<this.colcount;++col) {
+				columns[col] = this.floor;
+			}
+
 			this.board[row] = columns;
+			++row;
+			line = levelLinesResult.iterateNext();
 		}
 
-		this.board[this.playery][this.playerx] = this.player;
-		this.board[this.playery-1][this.playerx] = this.box;
-		this.board[this.playery-1][this.playerx-1] = this.box;
-		this.board[this.playery-2][this.playerx] = this.goal;
-		this.board[this.playery-2][this.playerx-1] = this.goal;
-		this.board[this.playery-3][this.playerx-1] = this.goal;
-		this.board[this.playery-3][this.playerx-2] = this.boxOnGoal;
-
-		this.rowcount = this.board.length;
-		this.colcount = this.board[0].length;
+		while(row<this.rowcount) {
+			var columns = [];
+			for(var col=0;col<this.colcount;++col) {
+				columns[col] = this.floor;
+			}
+			this.board[row] = columns;
+			++row;
+		}
 	}
 
 	this.drawBoard = function() {
@@ -58,7 +84,7 @@ function Game() {
 	};
 
 	this.getCellHtml = function(row, col) {
-		return this.board[row][col];
+		return this.board[row][col] ? this.board[row][col] : " ";
 	}
 
 	this.drawUpdate = function(playery, playerx, newplayery, newplayerx, newboxy, newboxx) {
@@ -99,8 +125,8 @@ function Game() {
 		this.playerx=newplayerx;
 		this.playery=newplayery;
 		if (this.isCompleted()) {
-			if(this.level <= 50){
-				alert("Congratulations. You completed this level");
+			if(this.level <= this.maxlevel){
+				alert("Congratulations. You completed level " + this.level);
 				this.level++;
 				this.initBoard();
 				this.drawBoard();

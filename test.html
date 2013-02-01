@@ -7,11 +7,8 @@
 <script type="text/javascript">
 (function() {
 	$(document).ready(function() {
-		$.get('./levels.txt', function(data) {
-			//alert(data);	
-		 	console.log(data);
-
-		 	var game = new Game();
+		$.get('./original.xml', function(gamedata) {
+		 	var game = new Game(gamedata);
 		 	game.initBoard();
 		 	game.drawBoard();
 
