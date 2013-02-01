@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <SokobanLevels xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="SokobanLev.xsd">
-  <Title>Original & Extra</Title>
+  <Title>Original &amp; Extra</Title>
   <Description>
 The 50 original levels from Sokoban plus the 40 from Extra.
   </Description>
