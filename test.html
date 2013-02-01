@@ -118,7 +118,11 @@
 	}
 
 
- 	$(document).ready(function() {
+	$(document).ready(function() {
+		$.get('./levels.txt', function(data) {
+			//alert(data);	
+			console.log(data);
+		});
 		var game = new Game();
 		game.initBoard();
 		game.drawBoard();
