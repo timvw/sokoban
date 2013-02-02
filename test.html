@@ -6,22 +6,8 @@
 <script type="text/javascript" src="./sokoban.js"></script>
 <script type="text/javascript">
 (function() {
-	$(document).ready(function() {
-		$.get('./original.xml', function(gamedata) {
-		 	var game = new Game(gamedata);
-		 	game.initBoard();
-		 	game.drawBoard();
-
-		 	$(document).keydown(function(e) {
-		 		var dx = 0;
-			 	var dy = 0;
-			 	if(e.keyCode==37) dx = -1;
-			 	if(e.keyCode==38) dy = -1;
-			 	if(e.keyCode==39) dx = 1;
-			 	if(e.keyCode==40) dy = 1;
-			 	game.move(dy,dx);
-			 });
-		 });
+ $(document).ready(function() {
+	 $('#game').sokoban('./original.xml');
 	});
 })(jQuery);
 </script>

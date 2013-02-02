@@ -1,5 +1,6 @@
-function Game(gameData) {
+function Game(gameData, gameDiv) {
 	this.gameData = gameData;
+	this.gameDiv = gameDiv;
 
 	this.wall = "#";
 	this.player = "@";
@@ -80,7 +81,7 @@ function Game(gameData) {
 		}
 		html += "</table>";
 
-		$("#game").html(html);
+		this.gameDiv.html(html);
 	};
 
 	this.getCellHtml = function(row, col) {
@@ -131,6 +132,7 @@ function Game(gameData) {
 		this.drawUpdate(this.playery, this.playerx, newplayery, newplayerx, newboxy, newboxx);
 		this.playerx=newplayerx;
 		this.playery=newplayery;
+
 		if (this.isCompleted()) {
 			if(this.level <= this.maxlevel){
 				alert("Congratulations. You completed level " + this.level);
@@ -143,3 +145,25 @@ function Game(gameData) {
 		}
 	}
 }
+
+(function($) {
+	$.fn.sokoban = function(gameUrl) {
+		var gameDiv = $(this);
+		$.get(gameUrl, function(gamedata) {
+		 	var game = new Game(gamedata, gameDiv);
+		 	game.initBoard();
+		 	game.drawBoard();
+
+		 	$(document).keydown(function(e) {
+		 		var dx = 0;
+			 	var dy = 0;
+			 	if(e.keyCode==37) dx = -1;
+			 	if(e.keyCode==38) dy = -1;
+			 	if(e.keyCode==39) dx = 1;
+			 	if(e.keyCode==40) dy = 1;
+			 	game.move(dy,dx);
+			 });
+		 });
+		return this;
+	};
+})(jQuery);
