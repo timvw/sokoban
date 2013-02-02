@@ -16,6 +16,7 @@ function Game(gameData, gameDiv) {
 	this.board;
 	this.rowcount;
 	this.colcount;
+	this.moves;
 
 	// load some data...
 	var levelCountXPath = "count(//Level)";
@@ -24,6 +25,7 @@ function Game(gameData, gameDiv) {
 
 	this.initBoard = function() {
 		this.board = [];
+		this.moves = 0;
 
 		var rowCountXPath = "//Level[@Id='" + this.level + "']/@Height";
 		var rowCountResult = this.gameData.evaluate(rowCountXPath, this.gameData, null, XPathResult.NUMBER_TYPE, null);
@@ -71,7 +73,8 @@ function Game(gameData, gameDiv) {
 	}
 
 	this.drawBoard = function() {
-		var html="<table>";
+		var html= "<div>Level: <span id='level'>" + this.level + "</span> / " + this.maxlevel + " Moves: <span id='moves'>" + this.moves + "</span></div>";
+		html += "<table>";
 		for(var row=0;row<this.rowcount;++row) {
 			html += "<tr>";
 			for(var col=0;col<this.colcount;++col) {
@@ -99,6 +102,7 @@ function Game(gameData, gameDiv) {
 		if(newboxy != null && newboxx != null) $("#row" + newboxy + "col" + newboxx).html(this.getCellHtml(newboxy,newboxx));
 		$("#row" + newplayery + "col" + newplayerx).html(this.getCellHtml(newplayery,newplayerx));
 		$("#row" + playery + "col" + playerx).html(this.getCellHtml(playery,playerx));
+		$("#moves").html(this.moves);
 	}
 
 	this.isCompleted = function() {
@@ -129,6 +133,7 @@ function Game(gameData, gameDiv) {
 		}
 		this.board[this.playery][this.playerx] = playervalue == this.playerOnGoal ? this.goal : this.floor;				
 		this.board[newplayery][newplayerx] = newplayervalue == this.boxOnGoal || newplayervalue == this.goal ? this.playerOnGoal : this.player;
+		this.moves++;
 		this.drawUpdate(this.playery, this.playerx, newplayery, newplayerx, newboxy, newboxx);
 		this.playerx=newplayerx;
 		this.playery=newplayery;
