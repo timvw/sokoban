@@ -1,6 +1,7 @@
-function Game(gameData, gameDiv) {
+function Game(gameData, gameDiv, imageUrl) {
 	this.gameData = gameData;
 	this.gameDiv = gameDiv;
+	this.imageUrl = imageUrl;
 
 	this.wall = "#";
 	this.player = "@";
@@ -89,12 +90,12 @@ function Game(gameData, gameDiv) {
 
 	this.getCellHtml = function(row, col) {
 		var cellValue = this.board[row][col] ? this.board[row][col] : this.floor;
-		if(cellValue == this.player) return "<img src='./images/player.png'/>";
-		if(cellValue == this.playerOnGoal) return "<img src='./images/playerOnGoal.png'/>";
-		if(cellValue == this.box) return "<img src='./images/box.png'/>";
-		if(cellValue == this.boxOnGoal) return "<img src='./images/boxOnGoal.png'/>";
-		if(cellValue == this.wall) return "<img src='./images/wall.png'/>";
-		if(cellValue == this.goal) return "<img src='./images/goal.png'/>";
+		if(cellValue == this.player) return "<img src='" + this.imageUrl + "player.png'/>";
+		if(cellValue == this.playerOnGoal) return "<img src='" + this.imageUrl + "playerOnGoal.png'/>";
+		if(cellValue == this.box) return "<img src='" + this.imageUrl + "box.png'/>";
+		if(cellValue == this.boxOnGoal) return "<img src='" + this.imageUrl + "boxOnGoal.png'/>";
+		if(cellValue == this.wall) return "<img src='" + this.imageUrl + "wall.png'/>";
+		if(cellValue == this.goal) return "<img src='" + this.imageUrl + "goal.png'/>";
 		if(cellValue == this.floor) return "&nbsp;";
 	}
 
@@ -152,10 +153,16 @@ function Game(gameData, gameDiv) {
 }
 
 (function($) {
-	$.fn.sokoban = function(gameUrl) {
+	$.fn.sokoban = function(options) {
+ 		// Create some defaults, extending them with any options that were provided
+    	var settings = $.extend( {
+			'gameUrl' : './js/icteam/levels/original.xml',
+      		'imagesUrl' : './images/',
+    	}, options);
+	
 		var gameDiv = $(this);
-		$.get(gameUrl, function(gamedata) {
-		 	var game = new Game(gamedata, gameDiv);
+		$.get(settings.gameUrl, function(gamedata) {
+		 	var game = new Game(gamedata, gameDiv, settings.imagesUrl);
 		 	game.initBoard();
 		 	game.drawBoard();
 
