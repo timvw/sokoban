@@ -6,8 +6,10 @@
 <script type="text/javascript" src="./js/icteam/jquery.sokoban.js"></script>
 <script type="text/javascript">
 (function() {
- $(document).ready(function() {
-	 $('#game').sokoban('./js/icteam/levels/original.xml');
+	$(document).ready(function() {
+		$('#game').sokoban({
+			gameUrl: './js/icteam/levels/original.xml'
+		});
 	});
 })(jQuery);
 </script>

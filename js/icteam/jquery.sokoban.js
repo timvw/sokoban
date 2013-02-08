@@ -118,6 +118,7 @@ function Game(gameData, gameDiv, imageUrl) {
 	}
 
 	this.move = function(dy, dx) {
+		if(dx==0 && dy==0) return;
 		var playervalue = this.board[this.playery][this.playerx];
 		var newplayerx = this.playerx + dx;
 		var newplayery = this.playery + dy;
