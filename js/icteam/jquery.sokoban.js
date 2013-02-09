@@ -11,7 +11,7 @@ function Game(gameData, gameDiv, imageUrl) {
 	this.goal = ".";
 	this.floor = " ";
 
-	this.level = 1;
+	this.level = 0;
 	this.playerx;
 	this.playery;
 	this.board;
@@ -19,32 +19,23 @@ function Game(gameData, gameDiv, imageUrl) {
 	this.colcount;
 	this.moves;
 
-	// load some data...
-	var levelCountXPath = "count(//Level)";
-	var levelCountResult = this.gameData.evaluate(levelCountXPath, this.gameData, null, XPathResult.NUMBER_TYPE,null);
-	this.maxlevel = levelCountResult.numberValue;
+	this.initGame = function() {
+		this.maxlevel = this.gameData.SokobanLevels.LevelCollection.Level.length;
+	};
 
-	this.initBoard = function() {
+	this.initLevel = function() {
 		this.board = [];
 		this.moves = 0;
 
-		var rowCountXPath = "//Level[@Id='" + this.level + "']/@Height";
-		var rowCountResult = this.gameData.evaluate(rowCountXPath, this.gameData, null, XPathResult.NUMBER_TYPE, null);
-		this.rowcount = rowCountResult.numberValue;
+		var currentLevel = this.gameData.SokobanLevels.LevelCollection.Level[this.level];
+		this.rowcount =  currentLevel["-Height"];
+		this.colcount = currentLevel["-Width"];
 
-		var colCountXPath = "//Level[@Id='" + this.level + "']/@Width";
-		var colCountResult = this.gameData.evaluate(colCountXPath, this.gameData, null, XPathResult.NUMBER_TYPE,null);
-		this.colcount = colCountResult.numberValue;
-
-		var levelLinesXPath = "//Level[@Id='" + this.level + "']/L";
-		var levelLinesResult = this.gameData.evaluate(levelLinesXPath, this.gameData, null, XPathResult.ANY_TYPE, null);	
-		var line = levelLinesResult.iterateNext();
-		
-		var row = 0;
-		while(line) {
+		var lines = currentLevel.L;	
+		for(var row=0;row<lines.length;++row) {
 			var columns = [];
 
-			var lineText = line.textContent;
+			var lineText = lines[row];
 			for(var col=0;col<lineText.length;++col) {
 				var cellValue = lineText.charAt(col);
 				columns[col] = cellValue;	
@@ -59,8 +50,6 @@ function Game(gameData, gameDiv, imageUrl) {
 			}
 
 			this.board[row] = columns;
-			++row;
-			line = levelLinesResult.iterateNext();
 		}
 
 		while(row<this.rowcount) {
@@ -144,28 +133,32 @@ function Game(gameData, gameDiv, imageUrl) {
 			if(this.level <= this.maxlevel){
 				alert("Congratulations. You completed level " + this.level);
 				this.level++;
-				this.initBoard();
+				this.initLevel();
 				this.drawBoard();
 			} else {
 				alert("Congratulations. You completed this game");
 			}
 		}
 	}
+
+	this.start = function(){
+		this.initGame();
+		this.initLevel();
+		this.drawBoard();
+	};
 }
 
 (function($) {
 	$.fn.sokoban = function(options) {
- 		// Create some defaults, extending them with any options that were provided
     	var settings = $.extend( {
-			'gameUrl' : './js/icteam/levels/original.xml',
-      		'imagesUrl' : './images/',
+			'gameUrl' : './js/icteam/levels/original.json',
+      		'imagesUrl' : './images/'
     	}, options);
 	
 		var gameDiv = $(this);
 		$.get(settings.gameUrl, function(gamedata) {
 		 	var game = new Game(gamedata, gameDiv, settings.imagesUrl);
-		 	game.initBoard();
-		 	game.drawBoard();
+			game.start();
 
 		 	$(document).keydown(function(e) {
 		 		var dx = 0;
@@ -176,7 +169,8 @@ function Game(gameData, gameDiv, imageUrl) {
 			 	if(e.keyCode==40) dy = 1;
 			 	game.move(dy,dx);
 			 });
-		 });
+		 }, "json")
+		.fail(function(a,b,c){ console.log("failed fetching data..." + b); });
 		return this;
 	};
 })(jQuery);

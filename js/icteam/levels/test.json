@@ -1,0 +1,34 @@
+{
+  "SokobanLevels": {
+    "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+    "schemaLocation": "SokobanLev.xsd",
+    "Title": "Original & Extra",
+    "Description": " The 50 original levels from Sokoban plus the 40 from Extra.  ",
+    "LevelCollection": {
+      "-Copyright": "Thinking Rabbit",
+      "-MaxWidth": "20",
+      "-MaxHeight": "17",
+      "Level": [
+        {
+          "-Id": "1",
+          "-Width": "19",
+          "-Height": "11",
+          "L": [
+            "    #####",
+            "    #   #",
+            "    #$  #",
+            "  ###  $##",
+            "  #  $ $ #",
+            "### # ## #   ######",
+            "#   # ## #####  ..#",
+            "# $  $          ..#",
+            "##### ### #@##  ..#",
+            "    #     #########",
+            "    #######"
+          ]
+        }
+      ]
+    }
+  }
+}
+
