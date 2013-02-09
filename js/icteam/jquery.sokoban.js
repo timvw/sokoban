@@ -63,7 +63,13 @@ function Game(gameData, gameDiv, imageUrl) {
 	}
 
 	this.drawLevel = function() {
-		var html= "<div>Level: <span id='level'>" + this.numberOfCurrentLevel + "</span> / " + this.numberOfAvailableLevels + " Moves: <span id='moves'>" + this.numberOfMoves + "</span></div>";
+
+		var selectOptions = "";
+		for(var i=0;i<this.numberOfAvailableLevels;++i){
+			selectOptions += "<option value='"+ i + "'>" + (i + 1) + "</option>";
+		}
+
+		var html = "<div>Current level: <select name='levelPicker'>"+selectOptions+"</select><input type='submit' value='Go'/></div>";
 		html += "<table>";
 		for(var row=0;row<this.numberOfRowsInLevel;++row) {
 			html += "<tr>";
@@ -73,6 +79,14 @@ function Game(gameData, gameDiv, imageUrl) {
 			html += "</tr>";
 		}
 		html += "</table>";
+
+		html += "<div>Level: <span id='level'>" 
+				+ (this.numberOfCurrentLevel + 1)
+				+ "</span> / " 
+				+ this.numberOfAvailableLevels 
+				+ " Moves: <span id='moves'>" 
+				+ this.numberOfMoves 
+				+ "</span></div>";
 
 		this.gameDiv.html(html);
 	};
