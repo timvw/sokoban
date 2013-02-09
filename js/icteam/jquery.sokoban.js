@@ -11,50 +11,50 @@ function Game(gameData, gameDiv, imageUrl) {
 	this.goal = ".";
 	this.floor = " ";
 
-	this.level = 0;
-	this.playerx;
-	this.playery;
+	this.numberOfCurrentLevel = 0;
+	this.columnIndexForPlayer;
+	this.rowIndexForPlayer;
 	this.board;
-	this.rowcount;
-	this.colcount;
-	this.moves;
+	this.numberOfRowsInLevel;
+	this.numberOfColumnsInLevel;
+	this.numberOfMoves;
 
-	this.initGame = function() {
-		this.maxlevel = this.gameData.SokobanLevels.LevelCollection.Level.length;
+	this.initializeGame = function() {
+		this.numberOfAvailableLevels = this.gameData.SokobanLevels.LevelCollection.Level.length;
 	};
 
-	this.initLevel = function() {
+	this.initializeLevel = function() {
 		this.board = [];
-		this.moves = 0;
+		this.numberOfMoves = 0;
 
-		var currentLevel = this.gameData.SokobanLevels.LevelCollection.Level[this.level];
-		this.rowcount =  currentLevel["-Height"];
-		this.colcount = currentLevel["-Width"];
+		var currentLevel = this.gameData.SokobanLevels.LevelCollection.Level[this.numberOfCurrentLevel];
+		this.numberOfRowsInLevel =  currentLevel["-Height"];
+		this.numberOfColumnsInLevel = currentLevel["-Width"];
 
-		var lines = currentLevel.L;	
-		for(var row=0;row<lines.length;++row) {
+		var rowsInLevel = currentLevel.L;	
+		for(var row=0;row<rowsInLevel.length;++row) {
 			var columns = [];
 
-			var lineText = lines[row];
-			for(var col=0;col<lineText.length;++col) {
-				var cellValue = lineText.charAt(col);
+			var rowText = rowsInLevel[row];
+			for(var col=0;col<rowText.length;++col) {
+				var cellValue = rowText.charAt(col);
 				columns[col] = cellValue;	
 				if(cellValue == this.player || cellValue == this.playerOnGoal) {
-					this.playerx = col;
-					this.playery = row;
+					this.columnIndexForPlayer = col;
+					this.rowIndexForPlayer = row;
 				}
 			}
 
-			for(var col = lineText.length;col<this.colcount;++col) {
+			for(var col = rowText.length;col<this.numberOfColumnsInLevel;++col) {
 				columns[col] = this.floor;
 			}
 
 			this.board[row] = columns;
 		}
 
-		while(row<this.rowcount) {
+		while(row<this.numberOfRowsInLevel) {
 			var columns = [];
-			for(var col=0;col<this.colcount;++col) {
+			for(var col=0;col<this.numberOfColumnsInLevel;++col) {
 				columns[col] = this.floor;
 			}
 			this.board[row] = columns;
@@ -62,12 +62,12 @@ function Game(gameData, gameDiv, imageUrl) {
 		}
 	}
 
-	this.drawBoard = function() {
-		var html= "<div>Level: <span id='level'>" + this.level + "</span> / " + this.maxlevel + " Moves: <span id='moves'>" + this.moves + "</span></div>";
+	this.drawLevel = function() {
+		var html= "<div>Level: <span id='level'>" + this.numberOfCurrentLevel + "</span> / " + this.numberOfAvailableLevels + " Moves: <span id='moves'>" + this.numberOfMoves + "</span></div>";
 		html += "<table>";
-		for(var row=0;row<this.rowcount;++row) {
+		for(var row=0;row<this.numberOfRowsInLevel;++row) {
 			html += "<tr>";
-			for(var col=0;col<this.colcount;++col) {
+			for(var col=0;col<this.numberOfColumnsInLevel;++col) {
 				html += "<td id='row" + row +"col" +col +"' class='gamecell'>" + this.getCellHtml(row,col) + "</td>";
 			}
 			html += "</tr>";
@@ -88,16 +88,16 @@ function Game(gameData, gameDiv, imageUrl) {
 		if(cellValue == this.floor) return "&nbsp;";
 	}
 
-	this.drawUpdate = function(playery, playerx, newplayery, newplayerx, newboxy, newboxx) {
-		if(newboxy != null && newboxx != null) $("#row" + newboxy + "col" + newboxx).html(this.getCellHtml(newboxy,newboxx));
-		$("#row" + newplayery + "col" + newplayerx).html(this.getCellHtml(newplayery,newplayerx));
+	this.drawUpdate = function(playery, playerx, newRowIndexForPlayer, newColumnIndexForPlayer, newRowIndexForAdjacentBox, newColumnIndexForAdjacentBox) {
+		if(newRowIndexForAdjacentBox != null && newColumnIndexForAdjacentBox != null) $("#row" + newRowIndexForAdjacentBox + "col" + newColumnIndexForAdjacentBox).html(this.getCellHtml(newRowIndexForAdjacentBox,newColumnIndexForAdjacentBox));
+		$("#row" + newRowIndexForPlayer + "col" + newColumnIndexForPlayer).html(this.getCellHtml(newRowIndexForPlayer,newColumnIndexForPlayer));
 		$("#row" + playery + "col" + playerx).html(this.getCellHtml(playery,playerx));
-		$("#moves").html(this.moves);
+		$("#moves").html(this.numberOfMoves);
 	}
 
 	this.isCompleted = function() {
-		for(var row=0;row<this.rowcount;++row) {
-			for(var col=0;col<this.colcount;++col) {
+		for(var row=0;row<this.numberOfRowsInLevel;++row) {
+			for(var col=0;col<this.numberOfColumnsInLevel;++col) {
 				if (this.board[row][col] == this.box) {
 					return false;
 				}	
@@ -106,35 +106,38 @@ function Game(gameData, gameDiv, imageUrl) {
 		return true;
 	}
 
-	this.move = function(dy, dx) {
-		if(dx==0 && dy==0) return;
-		var playervalue = this.board[this.playery][this.playerx];
-		var newplayerx = this.playerx + dx;
-		var newplayery = this.playery + dy;
-		var newplayervalue = this.board[newplayery][newplayerx];
-		var newboxx = null;
-		var newboxy = null;
-		if(newplayervalue == this.wall) return;
-		if(newplayervalue == this.box || newplayervalue == this.boxOnGoal) {
-			newboxx = newplayerx + dx;
-			newboxy = newplayery + dy;
-			var newboxvalue = this.board[newboxy][newboxx];
-			if(newboxvalue != this.floor && newboxvalue != this.goal) return;
-			this.board[newboxy][newboxx] = newboxvalue == this.goal ? this.boxOnGoal : this.box;
+	this.move = function(rowChange, columnChange) {
+		if(columnChange==0 && rowChange==0) return;
+
+		var cellValueForPlayer = this.board[this.rowIndexForPlayer][this.columnIndexForPlayer];
+		var newColumnIndexForPlayer = this.columnIndexForPlayer + columnChange;
+		var newRowIndexForPlayer = this.rowIndexForPlayer + rowChange;
+		var newCellValueForPlayer = this.board[newRowIndexForPlayer][newColumnIndexForPlayer];
+		if(newCellValueForPlayer == this.wall) return;
+		
+		var newColumnIndexForAdjacentBox = null;
+		var newRowIndexForAdjacentBox = null;
+		if(newCellValueForPlayer == this.box || newCellValueForPlayer == this.boxOnGoal) {
+			newColumnIndexForAdjacentBox = newColumnIndexForPlayer + columnChange;
+			newRowIndexForAdjacentBox = newRowIndexForPlayer + rowChange;
+			var newCellValueForAdjacentBox = this.board[newRowIndexForAdjacentBox][newColumnIndexForAdjacentBox];
+			if(newCellValueForAdjacentBox != this.floor && newCellValueForAdjacentBox != this.goal) return;
+			this.board[newRowIndexForAdjacentBox][newColumnIndexForAdjacentBox] = newCellValueForAdjacentBox == this.goal ? this.boxOnGoal : this.box;
 		}
-		this.board[this.playery][this.playerx] = playervalue == this.playerOnGoal ? this.goal : this.floor;				
-		this.board[newplayery][newplayerx] = newplayervalue == this.boxOnGoal || newplayervalue == this.goal ? this.playerOnGoal : this.player;
-		this.moves++;
-		this.drawUpdate(this.playery, this.playerx, newplayery, newplayerx, newboxy, newboxx);
-		this.playerx=newplayerx;
-		this.playery=newplayery;
+
+		this.board[this.rowIndexForPlayer][this.columnIndexForPlayer] = cellValueForPlayer == this.playerOnGoal ? this.goal : this.floor;				
+		this.board[newRowIndexForPlayer][newColumnIndexForPlayer] = newCellValueForPlayer == this.boxOnGoal || newCellValueForPlayer == this.goal ? this.playerOnGoal : this.player;
+		this.numberOfMoves++;
+		this.drawUpdate(this.rowIndexForPlayer, this.columnIndexForPlayer, newRowIndexForPlayer, newColumnIndexForPlayer, newRowIndexForAdjacentBox, newColumnIndexForAdjacentBox);
+		this.columnIndexForPlayer = newColumnIndexForPlayer;
+		this.rowIndexForPlayer = newRowIndexForPlayer;
 
 		if (this.isCompleted()) {
-			if(this.level <= this.maxlevel){
-				alert("Congratulations. You completed level " + this.level);
-				this.level++;
-				this.initLevel();
-				this.drawBoard();
+			if(this.numberOfCurrentLevel <= this.numberOfAvailableLevels){
+				alert("Congratulations. You completed level " + this.numberOfCurrentLevel);
+				this.numberOfCurrentLevel++;
+				this.initializeLevel();
+				this.drawLevel();
 			} else {
 				alert("Congratulations. You completed this game");
 			}
@@ -142,9 +145,9 @@ function Game(gameData, gameDiv, imageUrl) {
 	}
 
 	this.start = function(){
-		this.initGame();
-		this.initLevel();
-		this.drawBoard();
+		this.initializeGame();
+		this.initializeLevel();
+		this.drawLevel();
 	};
 }
 
@@ -161,13 +164,13 @@ function Game(gameData, gameDiv, imageUrl) {
 			game.start();
 
 		 	$(document).keydown(function(e) {
-		 		var dx = 0;
-			 	var dy = 0;
-			 	if(e.keyCode==37) dx = -1;
-			 	if(e.keyCode==38) dy = -1;
-			 	if(e.keyCode==39) dx = 1;
-			 	if(e.keyCode==40) dy = 1;
-			 	game.move(dy,dx);
+		 		var columnChange = 0;
+			 	var rowChange = 0;
+			 	if(e.keyCode==37) columnChange = -1;
+			 	if(e.keyCode==38) rowChange = -1;
+			 	if(e.keyCode==39) columnChange = 1;
+			 	if(e.keyCode==40) rowChange = 1;
+			 	game.move(rowChange,columnChange);
 			 });
 		 }, "json")
 		.fail(function(a,b,c){ console.log("failed fetching data..." + b); });
