@@ -66,7 +66,9 @@ function Game(gameData, gameDiv, imageUrl) {
 
 		var selectOptions = "";
 		for(var i=0;i<this.numberOfAvailableLevels;++i){
-			selectOptions += "<option value='"+ i + "'>" + (i + 1) + "</option>";
+			var selected = "";
+			if(i == this.numberOfCurrentLevel) selected = "selected";
+			selectOptions += "<option value='"+ i + "'"+ selected + ">" + (i + 1) + "</option>";
 		}
 
 		var html = "<div>Current level: <form><select id='levelPicker' name='levelPicker'>"+selectOptions+"</select><input type='submit' value='Go' id='levelbutton'/></form></div>";
@@ -80,8 +82,10 @@ function Game(gameData, gameDiv, imageUrl) {
 		}
 		html += "</table>";
 
+		var numberOfCurrentLevelToDisplay = parseInt(this.numberOfCurrentLevel) + 1;
+
 		html += "<div>Level: <span id='level'>" 
-				+ (this.numberOfCurrentLevel + 1)
+				+ numberOfCurrentLevelToDisplay 
 				+ "</span> / " 
 				+ this.numberOfAvailableLevels 
 				+ " Moves: <span id='moves'>" 
