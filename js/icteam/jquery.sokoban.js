@@ -69,7 +69,7 @@ function Game(gameData, gameDiv, imageUrl) {
 			selectOptions += "<option value='"+ i + "'>" + (i + 1) + "</option>";
 		}
 
-		var html = "<div>Current level: <select name='levelPicker'>"+selectOptions+"</select><input type='submit' value='Go'/></div>";
+		var html = "<div>Current level: <form><select id='levelPicker' name='levelPicker'>"+selectOptions+"</select><input type='submit' value='Go' id='levelbutton'/></form></div>";
 		html += "<table>";
 		for(var row=0;row<this.numberOfRowsInLevel;++row) {
 			html += "<tr>";
@@ -89,6 +89,16 @@ function Game(gameData, gameDiv, imageUrl) {
 				+ "</span></div>";
 
 		this.gameDiv.html(html);
+
+		$("#levelbutton").on('click',{ game : this }, function(event){
+			event.preventDefault();
+			var requestedLevel = $("#levelPicker :selected")[0].value;
+			var thisGame = event.data.game;
+			thisGame.numberOfCurrentLevel = requestedLevel;
+			thisGame.initializeLevel();
+			thisGame.drawLevel();
+			return false;
+		});
 	};
 
 	this.getCellHtml = function(row, col) {
