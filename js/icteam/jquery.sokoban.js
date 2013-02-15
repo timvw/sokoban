@@ -28,8 +28,8 @@ function Game(gameData, gameDiv, imageUrl) {
 		this.numberOfMoves = 0;
 
 		var currentLevel = this.gameData.SokobanLevels.LevelCollection.Level[this.numberOfCurrentLevel];
-		this.numberOfRowsInLevel =  currentLevel["-Height"];
-		this.numberOfColumnsInLevel = currentLevel["-Width"];
+		this.numberOfRowsInLevel =  currentLevel["Height"];
+		this.numberOfColumnsInLevel = currentLevel["Width"];
 
 		var rowsInLevel = currentLevel.L;	
 		for(var row=0;row<rowsInLevel.length;++row) {
