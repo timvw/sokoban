@@ -183,7 +183,7 @@ function Sokoban(games, gameDiv, imageUrl) {
 (function($) {
 	$.fn.sokoban = function(options) {
     	var settings = $.extend( {
-			'gamesUrl' : './js/icteam/list.json',
+			'gamesUrl' : './js/icteam/games.json',
       		'imagesUrl' : './images/'
     	}, options);
 	
