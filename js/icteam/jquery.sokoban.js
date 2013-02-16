@@ -1,7 +1,5 @@
-function Sokoban(games, gameDiv, imageUrl) {
+function Sokoban(games) {
 	this.games = games;
-	this.gameDiv = gameDiv;
-	this.imageUrl = imageUrl;
 
 	this.newBoardCallbacks = [];
 	this.updateBoardCallbacks = [];
@@ -191,9 +189,10 @@ function Sokoban(games, gameDiv, imageUrl) {
 	};
 };
 
-function SokobanDisplay(sokoban){
+function SokobanDisplay(sokoban, gameDiv, imagesUrl){
 	this.sokoban = sokoban;
-	this.imageUrl = sokoban.imageUrl;
+	this.gameDiv = gameDiv;
+	this.imagesUrl = imagesUrl;
 
 	this.registerCallbacks = function(){
 		this.sokoban.addNewBoardCallback({ target: this, method: this.drawLevel });
@@ -303,7 +302,7 @@ function SokobanDisplay(sokoban){
 		html += this.getLevelBoardHtml();	
 		html += this.getStatusHtml();
 
-		this.sokoban.gameDiv.html(html);
+		this.gameDiv.html(html);
 
 		$("#gameButton").on('click', $.proxy(function(event) {
 			event.preventDefault();
@@ -322,12 +321,12 @@ function SokobanDisplay(sokoban){
 
 	this.getCellHtml = function(row, col) {
 		var cellValue = this.sokoban.board[row][col] ? this.sokoban.board[row][col] : this.sokoban.floor;
-		if(cellValue == this.sokoban.player) return "<img src='" + this.imageUrl + "player.png'/>";
-		if(cellValue == this.sokoban.playerOnGoal) return "<img src='" + this.imageUrl + "playerOnGoal.png'/>";
-		if(cellValue == this.sokoban.box) return "<img src='" + this.imageUrl + "box.png'/>";
-		if(cellValue == this.sokoban.boxOnGoal) return "<img src='" + this.imageUrl + "boxOnGoal.png'/>";
-		if(cellValue == this.sokoban.wall) return "<img src='" + this.imageUrl + "wall.png'/>";
-		if(cellValue == this.sokoban.goal) return "<img src='" + this.imageUrl + "goal.png'/>";
+		if(cellValue == this.sokoban.player) return "<img src='" + this.imagesUrl + "player.png'/>";
+		if(cellValue == this.sokoban.playerOnGoal) return "<img src='" + this.imagesUrl + "playerOnGoal.png'/>";
+		if(cellValue == this.sokoban.box) return "<img src='" + this.imagesUrl + "box.png'/>";
+		if(cellValue == this.sokoban.boxOnGoal) return "<img src='" + this.imagesUrl + "boxOnGoal.png'/>";
+		if(cellValue == this.sokoban.wall) return "<img src='" + this.imagesUrl + "wall.png'/>";
+		if(cellValue == this.sokoban.goal) return "<img src='" + this.imagesUrl + "goal.png'/>";
 		if(cellValue == this.sokoban.floor) return "&nbsp;";
 	};
 
@@ -351,8 +350,8 @@ function SokobanDisplay(sokoban){
 		var gameDiv = $(this);
 		$.get(settings.gamesUrl, function(gamesData) {
 			var games = gamesData.games;
-			var sokoban = new Sokoban(games, gameDiv, settings.imagesUrl);
-			var sokobanDisplay = new SokobanDisplay(sokoban);
+			var sokoban = new Sokoban(games);
+			var sokobanDisplay = new SokobanDisplay(sokoban, gameDiv, settings.imagesUrl);
 			sokobanDisplay.registerCallbacks();
 			sokoban.initializeSokoban(settings.startGameUrl);
 
