@@ -19,6 +19,7 @@ function Sokoban(games, gameDiv, imageUrl) {
 	this.numberOfRowsInLevel;
 	this.numberOfColumnsInLevel;
 	this.numberOfMoves;
+	this.moves;
 
 	this.initializeSokoban = function(gameUrl) {
 		this.urlOfCurrentGame = gameUrl;
@@ -35,6 +36,7 @@ function Sokoban(games, gameDiv, imageUrl) {
 	this.initializeLevel = function() {
 		this.board = [];
 		this.numberOfMoves = 0;
+		this.moves = [];
 
 		var currentLevel = this.gameData.SokobanLevels.LevelCollection.Level[this.numberOfCurrentLevel];
 		this.numberOfRowsInLevel =  currentLevel["Height"];
@@ -199,24 +201,29 @@ function Sokoban(games, gameDiv, imageUrl) {
 		
 		var newColumnIndexForAdjacentBox = null;
 		var newRowIndexForAdjacentBox = null;
+		var movedBox = false;
 		if(newCellValueForPlayer == this.box || newCellValueForPlayer == this.boxOnGoal) {
 			newColumnIndexForAdjacentBox = newColumnIndexForPlayer + columnChange;
 			newRowIndexForAdjacentBox = newRowIndexForPlayer + rowChange;
 			var newCellValueForAdjacentBox = this.board[newRowIndexForAdjacentBox][newColumnIndexForAdjacentBox];
 			if(newCellValueForAdjacentBox != this.floor && newCellValueForAdjacentBox != this.goal) return;
+			movedBox = true;
 			this.board[newRowIndexForAdjacentBox][newColumnIndexForAdjacentBox] = newCellValueForAdjacentBox == this.goal ? this.boxOnGoal : this.box;
 		}
 
 		this.board[this.rowIndexForPlayer][this.columnIndexForPlayer] = cellValueForPlayer == this.playerOnGoal ? this.goal : this.floor;				
 		this.board[newRowIndexForPlayer][newColumnIndexForPlayer] = newCellValueForPlayer == this.boxOnGoal || newCellValueForPlayer == this.goal ? this.playerOnGoal : this.player;
 		this.numberOfMoves++;
+
+		var move = { "columnChange" : columnChange, "rowChange" : rowChange, "movedBox" : movedBox };
+		this.moves.push(move);
+
 		this.drawUpdate(this.rowIndexForPlayer, this.columnIndexForPlayer, newRowIndexForPlayer, newColumnIndexForPlayer, newRowIndexForAdjacentBox, newColumnIndexForAdjacentBox);
 		this.columnIndexForPlayer = newColumnIndexForPlayer;
 		this.rowIndexForPlayer = newRowIndexForPlayer;
 
 		if (this.isCompleted()) {
 			if(this.numberOfCurrentLevel < this.numberOfAvailableLevels){
-				alert("Congratulations. You completed level " + this.getNumberOfCurrentLevelLabel());
 				this.numberOfCurrentLevel++;
 				this.initializeLevel();
 				this.drawLevel();
@@ -224,6 +231,35 @@ function Sokoban(games, gameDiv, imageUrl) {
 				alert("Congratulations. You completed this game");
 			}
 		}
+	};
+
+	this.undoMove = function() {
+		if(this.moves.length == 0)return;
+		var move = this.moves.pop();
+		var invertedColumnChange = -1 * move.columnChange;
+		var invertedRowChange = -1 * move.rowChange;
+		var previousColumnIndexForPlayer = this.columnIndexForPlayer + invertedColumnChange;
+		var previousRowIndexForPlayer = this.rowIndexForPlayer + invertedRowChange;
+		this.board[previousRowIndexForPlayer][previousColumnIndexForPlayer] = this.board[previousRowIndexForPlayer][previousColumnIndexForPlayer] == this.goal ? this.playerOnGoal : this.player;
+		this.board[this.rowIndexForPlayer][this.columnIndexForPlayer] = this.board[this.rowIndexForPlayer][this.columnIndexForPlayer] == this.playerOnGoal ? this.goal : this.floor;
+		var columnIndexForBox;
+		var rowIndexForBox;
+		if(move.movedBox) {
+			columnIndexForBox = this.columnIndexForPlayer + move.columnChange;
+			rowIndexForBox = this.rowIndexForPlayer + move.rowChange;
+			var previousRowIndexForBox = this.rowIndexForPlayer;
+			var previousColumnIndexForBox = this.columnIndexForPlayer;
+			this.board[previousRowIndexForBox][previousColumnIndexForBox] = this.board[previousRowIndexForBox][previousColumnIndexForBox] == this.goal ? this.boxOnGoal : this.box;
+			this.board[rowIndexForBox][columnIndexForBox] = this.board[rowIndexForBox][columnIndexForBox] == this.boxOnGoal ? this.goal : this.floor;
+		}
+		console.log('current row:' + this.rowIndexForPlayer + ' col:' + this.columnIndexForPlayer);
+		console.log('previous row:' + previousRowIndexForPlayer + 'col:' + previousColumnIndexForPlayer);
+		console.log('box row:' + rowIndexForBox + ' col:' + columnIndexForBox);
+
+		this.drawUpdate(this.rowIndexForPlayer, this.columnIndexForPlayer, previousRowIndexForPlayer, previousColumnIndexForPlayer, rowIndexForBox, columnIndexForBox);
+		this.rowIndexForPlayer = previousRowIndexForPlayer;
+		this.columnIndexForPlayer = previousColumnIndexForPlayer;
+		this.numberOfMoves--;
 	};
 }
 
@@ -249,6 +285,9 @@ function Sokoban(games, gameDiv, imageUrl) {
 				if(e.keyCode==39) columnChange = 1;
 				if(e.keyCode==40) rowChange = 1;
 				sokoban.move(rowChange,columnChange);
+				if(e.keyCode==85 /**u**/ || e.keyCode ==90 /**z**/) {
+					sokoban.undoMove();
+				}
 			 });
 		 }, "json")
 		.fail(function(a,b,c){ console.log("failed fetching data..." + b); });
