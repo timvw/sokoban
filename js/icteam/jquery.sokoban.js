@@ -75,6 +75,14 @@ function SokobanLogic() {
 		this.invokeNewBoardCallbacks();
 	};
 
+	this.addNewBoardCallback = function(callback){
+		this.newBoardCallbacks.push(callback);
+	};
+
+	this.addUpdateBoardCallback = function(callback){
+		this.updateBoardCallbacks.push(callback);
+	};
+
 	this.addCompletedLevelCallback = function(callback) {
 		this.completedLevelCallbacks.push(callback);
 	};
@@ -83,6 +91,9 @@ function SokobanLogic() {
 		this.completedGameCallbacks.push(callback);
 	};
 
+	this.invokeNewBoardCallbacks = function(){
+		this.invokeCallbacks(this.newBoardCallbacks);
+	};
 	this.invokeCompletedLevelCallbacks = function(){
 		this.invokeCallbacks(this.completedLevelCallbacks);
 	};
@@ -91,33 +102,15 @@ function SokobanLogic() {
 		this.invokeCallbacks(this.completedGameCallbacks);
 	};
 
+	this.invokeUpdateBoardCallbacks = function(updatedCellCoordinates){
+		this.invokeCallbacks(this.updateBoardCallbacks, updatedCellCoordinates);
+	};
+
 	this.invokeCallbacks = function(callbacks, parameters){
 		for(var i=0;i<callbacks.length;++i)
 		{
 			var callback = callbacks[i];
-			callback.method.apply(callback.target, parameters);
-		}
-	};
-
-	this.addNewBoardCallback = function(callback){
-		this.newBoardCallbacks.push(callback);
-	};
-
-	this.invokeNewBoardCallbacks = function(){
-		for(var i=0;i<this.newBoardCallbacks.length;++i){
-			var callback = this.newBoardCallbacks[i];
-			callback.method.call(callback.target);
-		}
-	};
-
-	this.addUpdateBoardCallback = function(callback){
-		this.updateBoardCallbacks.push(callback);
-	};
-
-	this.invokeUpdateBoardCallbacks = function(updatedCellCoordinates){
-		for(var i=0;i<this.updateBoardCallbacks.length;++i){
-			var callback = this.updateBoardCallbacks[i];
-			callback.method.call(callback.target, updatedCellCoordinates);
+			callback.method.call(callback.target, parameters);
 		}
 	};
 
