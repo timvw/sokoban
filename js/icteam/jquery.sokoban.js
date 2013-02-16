@@ -93,14 +93,10 @@ function Sokoban(games, gameDiv, imageUrl) {
 		this.updateBoardCallbacks.push(callback);
 	};
 
-	this.invokeUpdateBoardCallbacks = function(rowIndex1, columnIndex1, rowIndex2, columnIndex2, rowIndex3, columnIndex3){
-		var updatedCoordinates = [];
-		if(rowIndex1 != null && columnIndex1 != null) updatedCoordinates.push({ y: rowIndex1, x: columnIndex1});
-		if(rowIndex2 != null && columnIndex2 != null) updatedCoordinates.push({ y: rowIndex2, x: columnIndex2});
-		if(rowIndex3 != null && columnIndex3 != null) updatedCoordinates.push({ y: rowIndex3, x: columnIndex3});
+	this.invokeUpdateBoardCallbacks = function(updatedCellCoordinates){
 		for(var i=0;i<this.updateBoardCallbacks.length;++i){
 			var callback = this.updateBoardCallbacks[i];
-			callback.method.call(callback.target, updatedCoordinates);
+			callback.method.call(callback.target, updatedCellCoordinates);
 		}
 	};
 
@@ -142,8 +138,14 @@ function Sokoban(games, gameDiv, imageUrl) {
 
 		var move = { columnChange : columnChange, rowChange : rowChange, movedBox : movedBox };
 		this.moves.push(move);
-		
-		this.invokeUpdateBoardCallbacks(this.rowIndexForPlayer, this.columnIndexForPlayer, newRowIndexForPlayer, newColumnIndexForPlayer, newRowIndexForAdjacentBox, newColumnIndexForAdjacentBox);
+
+		var updatedCellCoordinates = [];
+		updatedCellCoordinates.push({ y: this.rowIndexForPlayer, x: this.columnIndexForPlayer });
+		updatedCellCoordinates.push({ y: newRowIndexForPlayer, x: newColumnIndexForPlayer } );
+		if(movedBox){
+			updatedCellCoordinates.push({ y: newRowIndexForAdjacentBox, x: newColumnIndexForAdjacentBox });
+		}
+		this.invokeUpdateBoardCallbacks(updatedCellCoordinates);
 		this.columnIndexForPlayer = newColumnIndexForPlayer;
 		this.rowIndexForPlayer = newRowIndexForPlayer;
 
@@ -177,7 +179,13 @@ function Sokoban(games, gameDiv, imageUrl) {
 		}
 
 		this.numberOfMoves--;
-		this.invokeUpdateBoardCallbacks(this.rowIndexForPlayer, this.columnIndexForPlayer, previousRowIndexForPlayer, previousColumnIndexForPlayer, rowIndexForBox, columnIndexForBox);
+		var updatedCellCoordinates = [];
+		updatedCellCoordinates.push({ y: this.rowIndexForPlayer, x: this.columnIndexForPlayer });
+		updatedCellCoordinates.push({ y: previousRowIndexForPlayer, x: previousColumnIndexForPlayer });
+		if(move.movedBox){
+			updatedCellCoordinates.push({ y: rowIndexForBox, x: columnIndexForBox });
+		}
+		this.invokeUpdateBoardCallbacks(updatedCellCoordinates);
 		this.rowIndexForPlayer = previousRowIndexForPlayer;
 		this.columnIndexForPlayer = previousColumnIndexForPlayer;
 	};
