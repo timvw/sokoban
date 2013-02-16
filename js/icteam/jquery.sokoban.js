@@ -1,6 +1,4 @@
-function Sokoban(games) {
-	this.games = games;
-
+function Sokoban() {
 	this.newBoardCallbacks = [];
 	this.updateBoardCallbacks = [];
 
@@ -189,8 +187,9 @@ function Sokoban(games) {
 	};
 };
 
-function SokobanDisplay(sokoban, gameDiv, imagesUrl){
+function SokobanDisplay(sokoban, games, gameDiv, imagesUrl){
 	this.sokoban = sokoban;
+	this.games = games;
 	this.gameDiv = gameDiv;
 	this.imagesUrl = imagesUrl;
 
@@ -230,8 +229,8 @@ function SokobanDisplay(sokoban, gameDiv, imagesUrl){
 
 	this.getGameOptions = function() {
 		var options = [];
-		for(var i=0;i<this.sokoban.games.length;++i) {
-			var game = this.sokoban.games[i];
+		for(var i=0;i<this.games.length;++i) {
+			var game = this.games[i];
 			var gameLabel = this.getGameLabel(game);
 			var isSelected = game == this.sokoban.urlOfCurrentGame ? true : false;
 			var option = { value : game, label : gameLabel, isSelected : isSelected };
@@ -350,8 +349,8 @@ function SokobanDisplay(sokoban, gameDiv, imagesUrl){
 		var gameDiv = $(this);
 		$.get(settings.gamesUrl, function(gamesData) {
 			var games = gamesData.games;
-			var sokoban = new Sokoban(games);
-			var sokobanDisplay = new SokobanDisplay(sokoban, gameDiv, settings.imagesUrl);
+			var sokoban = new Sokoban();
+			var sokobanDisplay = new SokobanDisplay(sokoban, games, gameDiv, settings.imagesUrl);
 			sokobanDisplay.registerCallbacks();
 			sokoban.initializeSokoban(settings.startGameUrl);
 
