@@ -89,18 +89,24 @@ function Sokoban(games, gameDiv, imageUrl) {
 		var options = [];
 		for(var i=0;i<this.numberOfAvailableLevels;++i) {
 			var isSelected = i == this.numberOfCurrentLevel ? true : false;
-			var option = { "value" : i, "label" : (i+1), "isSelected" : isSelected };
+			var option = { value : i, label : (i+1), isSelected : isSelected };
 			options[i] = option;
 		}
 		return options;
+	};
+
+	this.getGameLabel = function(gameUrl){
+		var gameLabel = gameUrl;
+		return gameLabel;
 	};
 
 	this.getGameOptions = function() {
 		var options = [];
 		for(var i=0;i<this.games.length;++i) {
 			var game = this.games[i];
+			var gameLabel = this.getGameLabel(game);
 			var isSelected = game == this.urlOfCurrentGame ? true : false;
-			var option = { "value" : game, "label" : game, "isSelected" : isSelected };
+			var option = { value : game, label : gameLabel, isSelected : isSelected };
 			options[i] = option;
 		}
 		return options;
@@ -139,15 +145,18 @@ function Sokoban(games, gameDiv, imageUrl) {
 	};
 
 	this.getStatusHtml = function() {
-		var numberOfCurrentLevelToDisplay = this.getNumberOfCurrentLevelLabel(); 
+		var html = "";
 
-		var html = "<div>Level: <span id='level'>" 
-				+ numberOfCurrentLevelToDisplay 
+		html += "<div>Level: <span id='level'>" 
+				+ this.getNumberOfCurrentLevelLabel()
 				+ "</span> / " 
 				+ this.numberOfAvailableLevels 
 				+ " Moves: <span id='moves'>" 
 				+ this.numberOfMoves 
 				+ "</span></div>";
+
+		html += "<div>Use arrow keys to move. Press u to undo previous move.</div>";
+
 		return html;
 	};
 
