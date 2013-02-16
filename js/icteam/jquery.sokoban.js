@@ -20,7 +20,7 @@ function Sokoban() {
 	this.numberOfMoves;
 	this.moves;
 
-	this.initializeSokoban = function(gameUrl) {
+	this.initializeGame = function(gameUrl) {
 		this.urlOfCurrentGame = gameUrl;
 		$.get(gameUrl, $.proxy(function(gameData) {
 			this.gameData = gameData;
@@ -187,11 +187,33 @@ function Sokoban() {
 	};
 };
 
-function SokobanDisplay(sokoban, games, gameDiv, imagesUrl){
+function SokobanDisplay(sokoban, games, gameDiv, imagesUrl, gameUrl){
 	this.sokoban = sokoban;
 	this.games = games;
 	this.gameDiv = gameDiv;
 	this.imagesUrl = imagesUrl;
+	this.gameUrl = gameUrl;
+
+	this.start = function(){
+		this.registerCallbacks();
+		this.registerKeyListener();
+		this.sokoban.initializeGame(gameUrl);
+	};
+
+	this.registerKeyListener = function(){
+		$(document).keydown(function(e) {
+				var columnChange = 0;
+				var rowChange = 0;
+				if(e.keyCode==37) columnChange = -1;
+				if(e.keyCode==38) rowChange = -1;
+				if(e.keyCode==39) columnChange = 1;
+				if(e.keyCode==40) rowChange = 1;
+				sokoban.move(rowChange,columnChange);
+				if(e.keyCode==85 /**u**/ || e.keyCode ==90 /**z**/) {
+					sokoban.undoMove();
+				}
+		});
+	};
 
 	this.registerCallbacks = function(){
 		this.sokoban.addNewBoardCallback({ target: this, method: this.drawLevel });
@@ -306,7 +328,7 @@ function SokobanDisplay(sokoban, games, gameDiv, imagesUrl){
 		$("#gameButton").on('click', $.proxy(function(event) {
 			event.preventDefault();
 			var requestedGame = $("#gamePicker :selected")[0].value;
-			this.sokoban.initializeSokoban(requestedGame);
+			this.sokoban.initializeGame(requestedGame);
 			return false;
 		}, this));
 
@@ -350,23 +372,9 @@ function SokobanDisplay(sokoban, games, gameDiv, imagesUrl){
 		$.get(settings.gamesUrl, function(gamesData) {
 			var games = gamesData.games;
 			var sokoban = new Sokoban();
-			var sokobanDisplay = new SokobanDisplay(sokoban, games, gameDiv, settings.imagesUrl);
-			sokobanDisplay.registerCallbacks();
-			sokoban.initializeSokoban(settings.startGameUrl);
-
-			$(document).keydown(function(e) {
-				var columnChange = 0;
-				var rowChange = 0;
-				if(e.keyCode==37) columnChange = -1;
-				if(e.keyCode==38) rowChange = -1;
-				if(e.keyCode==39) columnChange = 1;
-				if(e.keyCode==40) rowChange = 1;
-				sokoban.move(rowChange,columnChange);
-				if(e.keyCode==85 /**u**/ || e.keyCode ==90 /**z**/) {
-					sokoban.undoMove();
-				}
-			 });
-		 }, "json")
+			var sokobanDisplay = new SokobanDisplay(sokoban, games, gameDiv, settings.imagesUrl, settings.startGameUrl);
+			sokobanDisplay.start();
+		}, "json")
 		.fail(function(a,b,c){ console.log("failed fetching data..." + b); });
 		return this;
 	};
