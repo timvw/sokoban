@@ -1,4 +1,4 @@
-function Sokoban() {
+function SokobanLogic() {
 	this.newBoardCallbacks = [];
 	this.updateBoardCallbacks = [];
 
@@ -25,7 +25,6 @@ function Sokoban() {
 		$.get(gameUrl, $.proxy(function(gameData) {
 			this.gameData = gameData;
 			this.numberOfAvailableLevels = this.gameData.SokobanLevels.LevelCollection.Level.length;
-			this.numberOfCurrentLevel = 0;
 			this.initializeLevel(0);
 		}, this), "json")
 		.fail(function(a,b,c){ console.log("failed fetching data..." + b); });
@@ -147,7 +146,8 @@ function Sokoban() {
 
 		if (this.isCompleted()) {
 			if(this.numberOfCurrentLevel < this.numberOfAvailableLevels){
-				this.initializeLevel(this.numberOfCurrentLevel++);
+				this.numberOfCurrentLevel++;
+				this.initializeLevel(this.numberOfCurrentLevel);
 			} else {
 				alert("Congratulations. You completed this game");
 			}
@@ -187,8 +187,8 @@ function Sokoban() {
 	};
 };
 
-function SokobanDisplay(sokoban, games, gameDiv, imagesUrl, gameUrl){
-	this.sokoban = sokoban;
+function Sokoban(games, gameDiv, imagesUrl, gameUrl){
+	this.sokobanLogic = new SokobanLogic();
 	this.games = games;
 	this.gameDiv = gameDiv;
 	this.imagesUrl = imagesUrl;
@@ -197,27 +197,27 @@ function SokobanDisplay(sokoban, games, gameDiv, imagesUrl, gameUrl){
 	this.start = function(){
 		this.registerCallbacks();
 		this.registerKeyListener();
-		this.sokoban.initializeGame(gameUrl);
+		this.sokobanLogic.initializeGame(gameUrl);
 	};
 
 	this.registerKeyListener = function(){
-		$(document).keydown(function(e) {
+		$(document).keydown($.proxy(function(e) {
 				var columnChange = 0;
 				var rowChange = 0;
 				if(e.keyCode==37) columnChange = -1;
 				if(e.keyCode==38) rowChange = -1;
 				if(e.keyCode==39) columnChange = 1;
 				if(e.keyCode==40) rowChange = 1;
-				sokoban.move(rowChange,columnChange);
+				this.sokobanLogic.move(rowChange,columnChange);
 				if(e.keyCode==85 /**u**/ || e.keyCode ==90 /**z**/) {
-					sokoban.undoMove();
+					this.sokobanLogic.undoMove();
 				}
-		});
+		}, this));
 	};
 
 	this.registerCallbacks = function(){
-		this.sokoban.addNewBoardCallback({ target: this, method: this.drawLevel });
-		this.sokoban.addUpdateBoardCallback({ target: this, method: this.drawUpdate });
+		this.sokobanLogic.addNewBoardCallback({ target: this, method: this.drawLevel });
+		this.sokobanLogic.addUpdateBoardCallback({ target: this, method: this.drawUpdate });
 	};
 
 	this.getSelectHtml = function(id, name, options) {
@@ -234,8 +234,8 @@ function SokobanDisplay(sokoban, games, gameDiv, imagesUrl, gameUrl){
 
 	this.getLevelOptions = function() {
 		var options = [];
-		for(var i=0;i<this.sokoban.numberOfAvailableLevels;++i) {
-			var isSelected = i == this.sokoban.numberOfCurrentLevel ? true : false;
+		for(var i=0;i<this.sokobanLogic.numberOfAvailableLevels;++i) {
+			var isSelected = i == this.sokobanLogic.numberOfCurrentLevel ? true : false;
 			var option = { value : i, label : (i+1), isSelected : isSelected };
 			options[i] = option;
 		}
@@ -254,7 +254,7 @@ function SokobanDisplay(sokoban, games, gameDiv, imagesUrl, gameUrl){
 		for(var i=0;i<this.games.length;++i) {
 			var game = this.games[i];
 			var gameLabel = this.getGameLabel(game);
-			var isSelected = game == this.sokoban.urlOfCurrentGame ? true : false;
+			var isSelected = game == this.sokobanLogic.urlOfCurrentGame ? true : false;
 			var option = { value : game, label : gameLabel, isSelected : isSelected };
 			options[i] = option;
 		}
@@ -263,7 +263,7 @@ function SokobanDisplay(sokoban, games, gameDiv, imagesUrl, gameUrl){
 
 	this.getNumberOfCurrentLevelLabel = function()
 	{
-		return parseInt(this.sokoban.numberOfCurrentLevel) + 1;
+		return parseInt(this.sokobanLogic.numberOfCurrentLevel) + 1;
 	};
 
 	this.getIdForCell = function(rowIndex, columnIndex){
@@ -280,9 +280,9 @@ function SokobanDisplay(sokoban, games, gameDiv, imagesUrl, gameUrl){
 
 	this.getLevelBoardHtml = function(){
 		var html = "<table>";
-		for(var row=0;row<this.sokoban.numberOfRowsInLevel;++row) {
+		for(var row=0;row<this.sokobanLogic.numberOfRowsInLevel;++row) {
 			html += "<tr>";
-			for(var col=0;col<this.sokoban.numberOfColumnsInLevel;++col) {
+			for(var col=0;col<this.sokobanLogic.numberOfColumnsInLevel;++col) {
 				var cellId = this.getIdForCell(row, col);
 				var cellHtml = this.getCellHtml(row,col); 
 				html += "<td id='" + cellId +"' class='gamecell'>" + cellHtml + "</td>";
@@ -299,9 +299,9 @@ function SokobanDisplay(sokoban, games, gameDiv, imagesUrl, gameUrl){
 		html += "<div>Level: <span id='level'>" 
 				+ this.getNumberOfCurrentLevelLabel()
 				+ "</span> / " 
-				+ this.sokoban.numberOfAvailableLevels 
+				+ this.sokobanLogic.numberOfAvailableLevels 
 				+ " Moves: <span id='moves'>" 
-				+ this.sokoban.numberOfMoves 
+				+ this.sokobanLogic.numberOfMoves 
 				+ "</span></div>";
 
 		html += "<div>Use arrow keys to move. Press u to undo previous move.</div>";
@@ -328,27 +328,27 @@ function SokobanDisplay(sokoban, games, gameDiv, imagesUrl, gameUrl){
 		$("#gameButton").on('click', $.proxy(function(event) {
 			event.preventDefault();
 			var requestedGame = $("#gamePicker :selected")[0].value;
-			this.sokoban.initializeGame(requestedGame);
+			this.sokobanLogic.initializeGame(requestedGame);
 			return false;
 		}, this));
 
 		$("#levelbutton").on('click',$.proxy(function(event){
 			event.preventDefault();
 			var requestedLevel = $("#levelPicker :selected")[0].value;
-			this.sokoban.initializeLevel(requestedLevel);
+			this.sokobanLogic.initializeLevel(requestedLevel);
 			return false;
 		}, this));
 	};
 
 	this.getCellHtml = function(row, col) {
-		var cellValue = this.sokoban.board[row][col] ? this.sokoban.board[row][col] : this.sokoban.floor;
-		if(cellValue == this.sokoban.player) return "<img src='" + this.imagesUrl + "player.png'/>";
-		if(cellValue == this.sokoban.playerOnGoal) return "<img src='" + this.imagesUrl + "playerOnGoal.png'/>";
-		if(cellValue == this.sokoban.box) return "<img src='" + this.imagesUrl + "box.png'/>";
-		if(cellValue == this.sokoban.boxOnGoal) return "<img src='" + this.imagesUrl + "boxOnGoal.png'/>";
-		if(cellValue == this.sokoban.wall) return "<img src='" + this.imagesUrl + "wall.png'/>";
-		if(cellValue == this.sokoban.goal) return "<img src='" + this.imagesUrl + "goal.png'/>";
-		if(cellValue == this.sokoban.floor) return "&nbsp;";
+		var cellValue = this.sokobanLogic.board[row][col] ? this.sokobanLogic.board[row][col] : this.sokobanLogic.floor;
+		if(cellValue == this.sokobanLogic.player) return "<img src='" + this.imagesUrl + "player.png'/>";
+		if(cellValue == this.sokobanLogic.playerOnGoal) return "<img src='" + this.imagesUrl + "playerOnGoal.png'/>";
+		if(cellValue == this.sokobanLogic.box) return "<img src='" + this.imagesUrl + "box.png'/>";
+		if(cellValue == this.sokobanLogic.boxOnGoal) return "<img src='" + this.imagesUrl + "boxOnGoal.png'/>";
+		if(cellValue == this.sokobanLogic.wall) return "<img src='" + this.imagesUrl + "wall.png'/>";
+		if(cellValue == this.sokobanLogic.goal) return "<img src='" + this.imagesUrl + "goal.png'/>";
+		if(cellValue == this.sokobanLogic.floor) return "&nbsp;";
 	};
 
 	this.drawUpdate = function(updatedCellCoordinates) {
@@ -356,7 +356,7 @@ function SokobanDisplay(sokoban, games, gameDiv, imagesUrl, gameUrl){
 			var cellCoordinate = updatedCellCoordinates[i];
 			$(this.getSelectorForCell(cellCoordinate.y, cellCoordinate.x)).html(this.getCellHtml(cellCoordinate.y, cellCoordinate.x));
 		}
-		$("#moves").html(this.sokoban.numberOfMoves);
+		$("#moves").html(this.sokobanLogic.numberOfMoves);
 	};
 };
 
@@ -371,9 +371,8 @@ function SokobanDisplay(sokoban, games, gameDiv, imagesUrl, gameUrl){
 		var gameDiv = $(this);
 		$.get(settings.gamesUrl, function(gamesData) {
 			var games = gamesData.games;
-			var sokoban = new Sokoban();
-			var sokobanDisplay = new SokobanDisplay(sokoban, games, gameDiv, settings.imagesUrl, settings.startGameUrl);
-			sokobanDisplay.start();
+			var sokoban = new Sokoban(games, gameDiv, settings.imagesUrl, settings.startGameUrl);
+			sokoban.start();
 		}, "json")
 		.fail(function(a,b,c){ console.log("failed fetching data..." + b); });
 		return this;
