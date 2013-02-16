@@ -3,6 +3,9 @@ function Sokoban(games, gameDiv, imageUrl) {
 	this.gameDiv = gameDiv;
 	this.imageUrl = imageUrl;
 
+	this.newBoardCallbacks = [];
+	this.updateBoardCallbacks = [];
+
 	this.wall = "#";
 	this.player = "@";
 	this.playerOnGoal = "+";
@@ -27,13 +30,13 @@ function Sokoban(games, gameDiv, imageUrl) {
 			this.gameData = gameData;
 			this.numberOfAvailableLevels = this.gameData.SokobanLevels.LevelCollection.Level.length;
 			this.numberOfCurrentLevel = 0;
-			this.initializeLevel();
-			this.drawLevel();
+			this.initializeLevel(0);
 		}, this), "json")
 		.fail(function(a,b,c){ console.log("failed fetching data..." + b); });
 	};
 
-	this.initializeLevel = function() {
+	this.initializeLevel = function(numberOfLevel) {
+		this.numberOfCurrentLevel = numberOfLevel;
 		this.board = [];
 		this.numberOfMoves = 0;
 		this.moves = [];
@@ -71,146 +74,34 @@ function Sokoban(games, gameDiv, imageUrl) {
 			this.board[row] = columns;
 			++row;
 		}
+
+		this.invokeNewBoardCallbacks();
 	};
 
-	this.getSelectHtml = function(id, name, options) {
-		var selectHtml = "<select id='" + id + "' name='" + name + "'>";
-		for(var i=0;i<options.length;++i){
-			var option = options[i];
-			var selected = "";
-			if(option.isSelected) selected = "selected";
-			selectHtml += "<option value='"+ option.value + "'"+ selected + ">" + option.label + "</option>";
+	this.addNewBoardCallback = function(callback){
+		this.newBoardCallbacks.push(callback);
+	};
+
+	this.invokeNewBoardCallbacks = function(){
+		for(var i=0;i<this.newBoardCallbacks.length;++i){
+			var callback = this.newBoardCallbacks[i];
+			callback.method.call(callback.target);
 		}
-		selectHtml += "</select>";
-		return selectHtml;
 	};
 
-	this.getLevelOptions = function() {
-		var options = [];
-		for(var i=0;i<this.numberOfAvailableLevels;++i) {
-			var isSelected = i == this.numberOfCurrentLevel ? true : false;
-			var option = { value : i, label : (i+1), isSelected : isSelected };
-			options[i] = option;
+	this.addUpdateBoardCallback = function(callback){
+		this.updateBoardCallbacks.push(callback);
+	};
+
+	this.invokeUpdateBoardCallbacks = function(rowIndex1, columnIndex1, rowIndex2, columnIndex2, rowIndex3, columnIndex3){
+		var updatedCoordinates = [];
+		if(rowIndex1 != null && columnIndex1 != null) updatedCoordinates.push({ y: rowIndex1, x: columnIndex1});
+		if(rowIndex2 != null && columnIndex2 != null) updatedCoordinates.push({ y: rowIndex2, x: columnIndex2});
+		if(rowIndex3 != null && columnIndex3 != null) updatedCoordinates.push({ y: rowIndex3, x: columnIndex3});
+		for(var i=0;i<this.updateBoardCallbacks.length;++i){
+			var callback = this.updateBoardCallbacks[i];
+			callback.method.call(callback.target, updatedCoordinates);
 		}
-		return options;
-	};
-
-	this.getGameLabel = function(gameUrl){
-		var lastSlashIndex = gameUrl.lastIndexOf('/');
-		var lastDotIndex = gameUrl.lastIndexOf('.');
-		var gameLabel = gameUrl.substring(lastSlashIndex + 1, lastDotIndex);
-		return gameLabel;
-	};
-
-	this.getGameOptions = function() {
-		var options = [];
-		for(var i=0;i<this.games.length;++i) {
-			var game = this.games[i];
-			var gameLabel = this.getGameLabel(game);
-			var isSelected = game == this.urlOfCurrentGame ? true : false;
-			var option = { value : game, label : gameLabel, isSelected : isSelected };
-			options[i] = option;
-		}
-		return options;
-	};
-
-	this.getNumberOfCurrentLevelLabel = function()
-	{
-		return parseInt(this.numberOfCurrentLevel) + 1;
-	};
-
-	this.getIdForCell = function(rowIndex, columnIndex){
-		var id = "row" + rowIndex + "col" + columnIndex;
-		return id;
-	};
-
-
-	this.getSelectorForCell = function(rowIndex, columnIndex) {
-		var cellId = this.getIdForCell(rowIndex, columnIndex);
-		var selector = "#" + cellId; 
-		return selector;
-	};
-
-	this.getLevelBoardHtml = function(){
-		var html = "<table>";
-		for(var row=0;row<this.numberOfRowsInLevel;++row) {
-			html += "<tr>";
-			for(var col=0;col<this.numberOfColumnsInLevel;++col) {
-				var cellId = this.getIdForCell(row, col);
-				var cellHtml = this.getCellHtml(row,col); 
-				html += "<td id='" + cellId +"' class='gamecell'>" + cellHtml + "</td>";
-			}
-			html += "</tr>";
-		}
-		html += "</table>";
-		return html;
-	};
-
-	this.getStatusHtml = function() {
-		var html = "";
-
-		html += "<div>Level: <span id='level'>" 
-				+ this.getNumberOfCurrentLevelLabel()
-				+ "</span> / " 
-				+ this.numberOfAvailableLevels 
-				+ " Moves: <span id='moves'>" 
-				+ this.numberOfMoves 
-				+ "</span></div>";
-
-		html += "<div>Use arrow keys to move. Press u to undo previous move.</div>";
-
-		return html;
-	};
-
-	this.drawLevel = function() {
-		var html = "";
-
-		var selectGameOptions = this.getGameOptions();
-		var selectGameHtml = this.getSelectHtml('gamePicker', 'gamePicker', selectGameOptions);
-		html += "<div>Current game: <form>" + selectGameHtml + "<input type='submit' value='Go' id='gameButton'/></form></div>";
-
-		var selectLevelOptions = this.getLevelOptions();	
-		var selectLevelHtml = this.getSelectHtml('levelPicker', 'levelPicker', selectLevelOptions);
-		html += "<div>Current level: <form>" + selectLevelHtml + "<input type='submit' value='Go' id='levelbutton'/></form></div>";
-		
-		html += this.getLevelBoardHtml();	
-		html += this.getStatusHtml();
-
-		this.gameDiv.html(html);
-
-		$("#gameButton").on('click', $.proxy(function(event) {
-			event.preventDefault();
-			var requestedGame = $("#gamePicker :selected")[0].value;
-			this.initializeSokoban(requestedGame);
-			return false;
-		}, this));
-
-		$("#levelbutton").on('click',$.proxy(function(event){
-			event.preventDefault();
-			var requestedLevel = $("#levelPicker :selected")[0].value;
-			this.numberOfCurrentLevel = requestedLevel;
-			this.initializeLevel();
-			this.drawLevel();
-			return false;
-		}, this));
-	};
-
-	this.getCellHtml = function(row, col) {
-		var cellValue = this.board[row][col] ? this.board[row][col] : this.floor;
-		if(cellValue == this.player) return "<img src='" + this.imageUrl + "player.png'/>";
-		if(cellValue == this.playerOnGoal) return "<img src='" + this.imageUrl + "playerOnGoal.png'/>";
-		if(cellValue == this.box) return "<img src='" + this.imageUrl + "box.png'/>";
-		if(cellValue == this.boxOnGoal) return "<img src='" + this.imageUrl + "boxOnGoal.png'/>";
-		if(cellValue == this.wall) return "<img src='" + this.imageUrl + "wall.png'/>";
-		if(cellValue == this.goal) return "<img src='" + this.imageUrl + "goal.png'/>";
-		if(cellValue == this.floor) return "&nbsp;";
-	};
-
-	this.drawUpdate = function(rowIndex1, columnIndex1, rowIndex2, columnIndex2, rowIndex3, columnIndex3) {
-		if(rowIndex1 != null && columnIndex1 != null) $(this.getSelectorForCell(rowIndex1, columnIndex1)).html(this.getCellHtml(rowIndex1, columnIndex1));
-		if(rowIndex2 != null && columnIndex2 != null) $(this.getSelectorForCell(rowIndex2, columnIndex2)).html(this.getCellHtml(rowIndex2, columnIndex2));
-		if(rowIndex3 != null && columnIndex3 != null) $(this.getSelectorForCell(rowIndex3, columnIndex3)).html(this.getCellHtml(rowIndex3, columnIndex3));
-		$("#moves").html(this.numberOfMoves);
 	};
 
 	this.isCompleted = function() {
@@ -251,16 +142,14 @@ function Sokoban(games, gameDiv, imageUrl) {
 
 		var move = { columnChange : columnChange, rowChange : rowChange, movedBox : movedBox };
 		this.moves.push(move);
-
-		this.drawUpdate(this.rowIndexForPlayer, this.columnIndexForPlayer, newRowIndexForPlayer, newColumnIndexForPlayer, newRowIndexForAdjacentBox, newColumnIndexForAdjacentBox);
+		
+		this.invokeUpdateBoardCallbacks(this.rowIndexForPlayer, this.columnIndexForPlayer, newRowIndexForPlayer, newColumnIndexForPlayer, newRowIndexForAdjacentBox, newColumnIndexForAdjacentBox);
 		this.columnIndexForPlayer = newColumnIndexForPlayer;
 		this.rowIndexForPlayer = newRowIndexForPlayer;
 
 		if (this.isCompleted()) {
 			if(this.numberOfCurrentLevel < this.numberOfAvailableLevels){
-				this.numberOfCurrentLevel++;
-				this.initializeLevel();
-				this.drawLevel();
+				this.initializeLevel(this.numberOfCurrentLevel++);
 			} else {
 				alert("Congratulations. You completed this game");
 			}
@@ -288,11 +177,160 @@ function Sokoban(games, gameDiv, imageUrl) {
 		}
 
 		this.numberOfMoves--;
-		this.drawUpdate(this.rowIndexForPlayer, this.columnIndexForPlayer, previousRowIndexForPlayer, previousColumnIndexForPlayer, rowIndexForBox, columnIndexForBox);
+		this.invokeUpdateBoardCallbacks(this.rowIndexForPlayer, this.columnIndexForPlayer, previousRowIndexForPlayer, previousColumnIndexForPlayer, rowIndexForBox, columnIndexForBox);
 		this.rowIndexForPlayer = previousRowIndexForPlayer;
 		this.columnIndexForPlayer = previousColumnIndexForPlayer;
 	};
-}
+};
+
+function SokobanDisplay(sokoban){
+	this.sokoban = sokoban;
+	this.imageUrl = sokoban.imageUrl;
+
+	this.registerCallbacks = function(){
+		this.sokoban.addNewBoardCallback({ target: this, method: this.drawLevel });
+		this.sokoban.addUpdateBoardCallback({ target: this, method: this.drawUpdate });
+	};
+
+	this.getSelectHtml = function(id, name, options) {
+		var selectHtml = "<select id='" + id + "' name='" + name + "'>";
+		for(var i=0;i<options.length;++i){
+			var option = options[i];
+			var selected = "";
+			if(option.isSelected) selected = "selected";
+			selectHtml += "<option value='"+ option.value + "'"+ selected + ">" + option.label + "</option>";
+		}
+		selectHtml += "</select>";
+		return selectHtml;
+	};
+
+	this.getLevelOptions = function() {
+		var options = [];
+		for(var i=0;i<this.sokoban.numberOfAvailableLevels;++i) {
+			var isSelected = i == this.sokoban.numberOfCurrentLevel ? true : false;
+			var option = { value : i, label : (i+1), isSelected : isSelected };
+			options[i] = option;
+		}
+		return options;
+	};
+
+	this.getGameLabel = function(gameUrl){
+		var lastSlashIndex = gameUrl.lastIndexOf('/');
+		var lastDotIndex = gameUrl.lastIndexOf('.');
+		var gameLabel = gameUrl.substring(lastSlashIndex + 1, lastDotIndex);
+		return gameLabel;
+	};
+
+	this.getGameOptions = function() {
+		var options = [];
+		for(var i=0;i<this.sokoban.games.length;++i) {
+			var game = this.sokoban.games[i];
+			var gameLabel = this.getGameLabel(game);
+			var isSelected = game == this.sokoban.urlOfCurrentGame ? true : false;
+			var option = { value : game, label : gameLabel, isSelected : isSelected };
+			options[i] = option;
+		}
+		return options;
+	};
+
+	this.getNumberOfCurrentLevelLabel = function()
+	{
+		return parseInt(this.sokoban.numberOfCurrentLevel) + 1;
+	};
+
+	this.getIdForCell = function(rowIndex, columnIndex){
+		var id = "row" + rowIndex + "col" + columnIndex;
+		return id;
+	};
+
+
+	this.getSelectorForCell = function(rowIndex, columnIndex) {
+		var cellId = this.getIdForCell(rowIndex, columnIndex);
+		var selector = "#" + cellId; 
+		return selector;
+	};
+
+	this.getLevelBoardHtml = function(){
+		var html = "<table>";
+		for(var row=0;row<this.sokoban.numberOfRowsInLevel;++row) {
+			html += "<tr>";
+			for(var col=0;col<this.sokoban.numberOfColumnsInLevel;++col) {
+				var cellId = this.getIdForCell(row, col);
+				var cellHtml = this.getCellHtml(row,col); 
+				html += "<td id='" + cellId +"' class='gamecell'>" + cellHtml + "</td>";
+			}
+			html += "</tr>";
+		}
+		html += "</table>";
+		return html;
+	};
+
+	this.getStatusHtml = function() {
+		var html = "";
+
+		html += "<div>Level: <span id='level'>" 
+				+ this.getNumberOfCurrentLevelLabel()
+				+ "</span> / " 
+				+ this.sokoban.numberOfAvailableLevels 
+				+ " Moves: <span id='moves'>" 
+				+ this.sokoban.numberOfMoves 
+				+ "</span></div>";
+
+		html += "<div>Use arrow keys to move. Press u to undo previous move.</div>";
+
+		return html;
+	};
+
+	this.drawLevel = function() {
+		var html = "";
+
+		var selectGameOptions = this.getGameOptions();
+		var selectGameHtml = this.getSelectHtml('gamePicker', 'gamePicker', selectGameOptions);
+		html += "<div>Current game: <form>" + selectGameHtml + "<input type='submit' value='Go' id='gameButton'/></form></div>";
+
+		var selectLevelOptions = this.getLevelOptions();	
+		var selectLevelHtml = this.getSelectHtml('levelPicker', 'levelPicker', selectLevelOptions);
+		html += "<div>Current level: <form>" + selectLevelHtml + "<input type='submit' value='Go' id='levelbutton'/></form></div>";
+		
+		html += this.getLevelBoardHtml();	
+		html += this.getStatusHtml();
+
+		this.sokoban.gameDiv.html(html);
+
+		$("#gameButton").on('click', $.proxy(function(event) {
+			event.preventDefault();
+			var requestedGame = $("#gamePicker :selected")[0].value;
+			this.sokoban.initializeSokoban(requestedGame);
+			return false;
+		}, this));
+
+		$("#levelbutton").on('click',$.proxy(function(event){
+			event.preventDefault();
+			var requestedLevel = $("#levelPicker :selected")[0].value;
+			this.sokoban.initializeLevel(requestedLevel);
+			return false;
+		}, this));
+	};
+
+	this.getCellHtml = function(row, col) {
+		var cellValue = this.sokoban.board[row][col] ? this.sokoban.board[row][col] : this.sokoban.floor;
+		if(cellValue == this.sokoban.player) return "<img src='" + this.imageUrl + "player.png'/>";
+		if(cellValue == this.sokoban.playerOnGoal) return "<img src='" + this.imageUrl + "playerOnGoal.png'/>";
+		if(cellValue == this.sokoban.box) return "<img src='" + this.imageUrl + "box.png'/>";
+		if(cellValue == this.sokoban.boxOnGoal) return "<img src='" + this.imageUrl + "boxOnGoal.png'/>";
+		if(cellValue == this.sokoban.wall) return "<img src='" + this.imageUrl + "wall.png'/>";
+		if(cellValue == this.sokoban.goal) return "<img src='" + this.imageUrl + "goal.png'/>";
+		if(cellValue == this.sokoban.floor) return "&nbsp;";
+	};
+
+	this.drawUpdate = function(updatedCellCoordinates) {
+		for(var i=0; i<updatedCellCoordinates.length;++i){
+			var cellCoordinate = updatedCellCoordinates[i];
+			$(this.getSelectorForCell(cellCoordinate.y, cellCoordinate.x)).html(this.getCellHtml(cellCoordinate.y, cellCoordinate.x));
+		}
+		$("#moves").html(this.sokoban.numberOfMoves);
+	};
+};
 
 (function($) {
 	$.fn.sokoban = function(options) {
@@ -306,6 +344,8 @@ function Sokoban(games, gameDiv, imageUrl) {
 		$.get(settings.gamesUrl, function(gamesData) {
 			var games = gamesData.games;
 			var sokoban = new Sokoban(games, gameDiv, settings.imagesUrl);
+			var sokobanDisplay = new SokobanDisplay(sokoban);
+			sokobanDisplay.registerCallbacks();
 			sokoban.initializeSokoban(settings.startGameUrl);
 
 			$(document).keydown(function(e) {
