@@ -96,7 +96,9 @@ function Sokoban(games, gameDiv, imageUrl) {
 	};
 
 	this.getGameLabel = function(gameUrl){
-		var gameLabel = gameUrl;
+		var lastSlashIndex = gameUrl.lastIndexOf('/');
+		var lastDotIndex = gameUrl.lastIndexOf('.');
+		var gameLabel = gameUrl.substring(lastSlashIndex + 1, lastDotIndex);
 		return gameLabel;
 	};
 
