@@ -1,6 +1,8 @@
 function SokobanLogic() {
 	this.newBoardCallbacks = [];
 	this.updateBoardCallbacks = [];
+	this.completedLevelCallbacks = [];
+	this.completedGameCallbacks = [];
 
 	this.wall = "#";
 	this.player = "@";
@@ -71,6 +73,30 @@ function SokobanLogic() {
 		}
 
 		this.invokeNewBoardCallbacks();
+	};
+
+	this.addCompletedLevelCallback = function(callback) {
+		this.completedLevelCallbacks.push(callback);
+	};
+
+	this.addCompletedGameCallback = function(callback) {
+		this.completedGameCallbacks.push(callback);
+	};
+
+	this.invokeCompletedLevelCallbacks = function(){
+		this.invokeCallbacks(this.completedLevelCallbacks);
+	};
+
+	this.invokeCompletedGameCallbacks = function(){
+		this.invokeCallbacks(this.completedGameCallbacks);
+	};
+
+	this.invokeCallbacks = function(callbacks, parameters){
+		for(var i=0;i<callbacks.length;++i)
+		{
+			var callback = callbacks[i];
+			callback.method.apply(callback.target, parameters);
+		}
 	};
 
 	this.addNewBoardCallback = function(callback){
@@ -145,11 +171,12 @@ function SokobanLogic() {
 		this.rowIndexForPlayer = newRowIndexForPlayer;
 
 		if (this.isCompleted()) {
+			this.invokeCompletedLevelCallbacks();
 			if(this.numberOfCurrentLevel < this.numberOfAvailableLevels){
 				this.numberOfCurrentLevel++;
 				this.initializeLevel(this.numberOfCurrentLevel);
 			} else {
-				alert("Congratulations. You completed this game");
+				this.invokeGameCompletedCallbacks();
 			}
 		}
 	};
@@ -218,6 +245,16 @@ function Sokoban(games, gameDiv, imagesUrl, gameUrl){
 	this.registerCallbacks = function(){
 		this.sokobanLogic.addNewBoardCallback({ target: this, method: this.drawLevel });
 		this.sokobanLogic.addUpdateBoardCallback({ target: this, method: this.drawUpdate });
+		this.sokobanLogic.addCompletedLevelCallback({ target: this, method: this.completedLevel });
+		this.sokobanLogic.addCompletedGameCallback({ target: this, method: this.completedGame });
+	};
+
+	this.completedLevel = function(){
+		//alert('completed level...');
+	};
+
+	this.completedGame = function(){
+		//alert('completed game');
 	};
 
 	this.getSelectHtml = function(id, name, options) {
