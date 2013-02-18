@@ -9,7 +9,6 @@ describe('When moving the player', function(){
             sut.rowIndexForPlayer= 0;
             sut.columnIndexForPlayer = 0;
             sut.moves = [];
-            sut.numberOfMoves = sut.moves.length;
 
             sut.move(0,1);
 
@@ -24,7 +23,6 @@ describe('When moving the player', function(){
             sut.rowIndexForPlayer= 0;
             sut.columnIndexForPlayer = 0;
             sut.moves = [];
-            sut.numberOfMoves = sut.moves.length;
 
             sut.move(0,1);
 
