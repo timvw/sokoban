@@ -102,9 +102,9 @@
 
         this.getLevelBoardHtml = function(){
             var html = "<table>";
-            for(var row=0;row<this.sokobanLogic.numberOfRowsInLevel;++row) {
+            for(var row=0;row<this.sokobanLogic.getNumberOfRowsInLevel();++row) {
                 html += "<tr>";
-                for(var col=0;col<this.sokobanLogic.numberOfColumnsInLevel;++col) {
+                for(var col=0;col<this.sokobanLogic.getNumberOfColumnsInLevel();++col) {
                     var cellId = this.getIdForCell(row, col);
                     var cellHtml = this.getCellHtml(row,col);
                     html += "<td id='" + cellId +"' class='gamecell'>" + cellHtml + "</td>";
@@ -123,7 +123,7 @@
             + "</span> / "
             + this.sokobanLogic.numberOfAvailableLevels
             + " Moves: <span id='moves'>"
-            + this.sokobanLogic.numberOfMoves
+            + this.sokobanLogic.getNumberOfMoves()
             + "</span></div>";
 
             html += "<div>Use arrow keys to move. Press u to undo previous move.</div>";
@@ -178,7 +178,7 @@
                 var cellCoordinate = updatedCellCoordinates[i];
                 $(this.getSelectorForCell(cellCoordinate.y, cellCoordinate.x)).html(this.getCellHtml(cellCoordinate.y, cellCoordinate.x));
             }
-            $("#moves").html(this.sokobanLogic.numberOfMoves);
+            $("#moves").html(this.sokobanLogic.getNumberOfMoves());
         };
     };
 

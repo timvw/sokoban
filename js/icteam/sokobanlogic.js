@@ -18,9 +18,6 @@
         this.columnIndexForPlayer;
         this.rowIndexForPlayer;
         this.board;
-        this.numberOfRowsInLevel;
-        this.numberOfColumnsInLevel;
-        this.numberOfMoves;
         this.moves;
 
         this.initializeGame = function(gameUrl) {
@@ -33,15 +30,26 @@
             .fail(function(a,b,c){ console.log("failed fetching data..." + b); });
         };
 
+        this.getNumberOfRowsInLevel = function(){
+            return this.board.length;
+        };
+
+        this.getNumberOfColumnsInLevel = function(){
+            return this.board[0].length;
+        };
+
+        this.getNumberOfMoves = function(){
+            return this.moves.length;
+        };
+
         this.initializeLevel = function(numberOfLevel) {
             this.numberOfCurrentLevel = numberOfLevel;
             this.board = [];
-            this.numberOfMoves = 0;
             this.moves = [];
 
             var currentLevel = this.gameData.SokobanLevels.LevelCollection.Level[this.numberOfCurrentLevel];
-            this.numberOfRowsInLevel =  currentLevel.Height;
-            this.numberOfColumnsInLevel = currentLevel.Width;
+            var numberOfRowsInLevel =  currentLevel.Height;
+            var numberOfColumnsInLevel = currentLevel.Width;
 
             var rowsInLevel = currentLevel.L;
             for(var row=0;row<rowsInLevel.length;++row) {
@@ -57,16 +65,16 @@
                     }
                 }
 
-                for(var col = rowText.length;col<this.numberOfColumnsInLevel;++col) {
+                for(var col = rowText.length;col<numberOfColumnsInLevel;++col) {
                     columns[col] = this.floor;
                 }
 
                 this.board[row] = columns;
             }
 
-            while(row<this.numberOfRowsInLevel) {
+            while(row<numberOfRowsInLevel) {
                 var columns = [];
-                for(var col=0;col<this.numberOfColumnsInLevel;++col) {
+                for(var col=0;col<numberOfColumnsInLevel;++col) {
                     columns[col] = this.floor;
                 }
                 this.board[row] = columns;
@@ -116,8 +124,8 @@
         };
 
         this.isCompleted = function() {
-            for(var row=0;row<this.numberOfRowsInLevel;++row) {
-                for(var col=0;col<this.numberOfColumnsInLevel;++col) {
+            for(var row=0;row<this.getNumberOfRowsInLevel();++row) {
+                for(var col=0;col<this.getNumberOfColumnsInLevel();++col) {
                     if (this.board[row][col] == this.box) {
                         return false;
                     }
@@ -149,7 +157,6 @@
 
             this.board[this.rowIndexForPlayer][this.columnIndexForPlayer] = cellValueForPlayer == this.playerOnGoal ? this.goal : this.floor;
             this.board[newRowIndexForPlayer][newColumnIndexForPlayer] = newCellValueForPlayer == this.boxOnGoal || newCellValueForPlayer == this.goal ? this.playerOnGoal : this.player;
-            this.numberOfMoves++;
 
             var move = { columnChange : columnChange, rowChange : rowChange, movedBox : movedBox };
             this.moves.push(move);
@@ -195,7 +202,6 @@
                 this.board[rowIndexForBox][columnIndexForBox] = this.board[rowIndexForBox][columnIndexForBox] == this.boxOnGoal ? this.goal : this.floor;
             }
 
-            this.numberOfMoves--;
             var updatedCellCoordinates = [];
             updatedCellCoordinates.push({ y: this.rowIndexForPlayer, x: this.columnIndexForPlayer });
             updatedCellCoordinates.push({ y: previousRowIndexForPlayer, x: previousColumnIndexForPlayer });
