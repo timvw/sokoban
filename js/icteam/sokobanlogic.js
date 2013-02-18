@@ -139,7 +139,9 @@
 
             var cellValueForPlayer = this.board[this.rowIndexForPlayer][this.columnIndexForPlayer];
             var newColumnIndexForPlayer = this.columnIndexForPlayer + columnChange;
+            if(newColumnIndexForPlayer < 0 || newColumnIndexForPlayer >= this.getNumberOfColumnsInLevel())return;
             var newRowIndexForPlayer = this.rowIndexForPlayer + rowChange;
+            if(newRowIndexForPlayer < 0 || newRowIndexForPlayer >= this.getNumberOfRowsInLevel())return;
             var newCellValueForPlayer = this.board[newRowIndexForPlayer][newColumnIndexForPlayer];
             if(newCellValueForPlayer == this.wall) return;
 
