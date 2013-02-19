@@ -3,7 +3,7 @@
     	var settings = $.extend( {
 			'gamesUrl' : './js/icteam/games.json',
       		'imagesUrl' : './images/',
-			'startGameUrl' : "./js/icteam/levels/original.json"
+			'startGameUrl' : "./js/icteam/levels/Original.json"
     	}, options);
 
 		var gameDiv = $(this);
