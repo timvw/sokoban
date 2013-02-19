@@ -254,3 +254,45 @@ describe('When moving the player', function(){
         });
     });
 });
+
+describe('When undoing the last move', function(){
+    describe('When no previous has been made', function(){
+        var sut = new SokobanLogic();
+        sut.board = [[sut.player]];
+        sut.rowIndexForPlayer= 0;
+        sut.columnIndexForPlayer = 0;
+        sut.moves = [];
+
+        sut.undoMove();
+
+        it('should not move the player', function(){
+            expect(sut.board[0][0]).to.be(sut.player);
+        });
+
+        it('should not unregister a move', function(){
+            expect(sut.getNumberOfMoves() == 0);
+        });
+    });
+
+    describe('When the player is on a goal', function(){
+        var sut = new SokobanLogic();
+        sut.board = [[sut.floor, sut.playerOngoal]];
+        sut.rowIndexForPlayer= 0;
+        sut.columnIndexForPlayer = 1;
+        sut.moves = [];
+        sut.moves.push({ columnChange: 1, rowChange: 0, boxMoved: false });
+        sut.undoMove();
+
+        it('should move the player back to his previous position',function(){
+            expect(sut.board[0][0]).to.be(sut.player);
+        });
+
+        it('should restore the goal', function(){
+            expect(sut.board[0][1]).to.be(sut.goal);
+        });
+
+        it('should unregister a move', function(){
+            expect(sut.getNumberOfMoves() == 0);
+        });
+    });
+});
