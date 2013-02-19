@@ -276,11 +276,11 @@ describe('When undoing the last move', function(){
 
     describe('When the player is on a goal', function(){
         var sut = new SokobanLogic();
-        sut.board = [[sut.floor, sut.playerOngoal]];
+        sut.board = [[sut.floor, sut.playerOnGoal]];
         sut.rowIndexForPlayer= 0;
         sut.columnIndexForPlayer = 1;
         sut.moves = [];
-        sut.moves.push({ columnChange: 1, rowChange: 0, boxMoved: false });
+        sut.moves.push({ columnChange: 1, rowChange: 0, movedBox: false });
         sut.undoMove();
 
         it('should move the player back to his previous position',function(){
@@ -293,6 +293,32 @@ describe('When undoing the last move', function(){
 
         it('should unregister a move', function(){
             expect(sut.getNumberOfMoves() == 0);
+        });
+
+        describe('When a box was pushed to a floor', function(){
+            var sut = new SokobanLogic();
+            sut.board = [[sut.floor, sut.playerOnGoal, sut.box]];
+            sut.rowIndexForPlayer= 0;
+            sut.columnIndexForPlayer = 1;
+            sut.moves = [];
+            sut.moves.push({ columnChange: 1, rowChange: 0, movedBox: true });
+            sut.undoMove();
+
+            it('should move the player back to his previous position',function(){
+                expect(sut.board[0][0]).to.be(sut.player);
+            });
+
+            it('should unregister a move', function(){
+                expect(sut.getNumberOfMoves() == 0);
+            });
+
+            it('should move the box back on the goal', function(){
+                expect(sut.board[0][1]).to.be(sut.boxOnGoal);
+            });
+
+            it('should restore the floor', function(){
+                expect(sut.board[0][2]).to.be(sut.floor);
+            });
         });
     });
 });
