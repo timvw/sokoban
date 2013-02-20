@@ -1,3 +1,4 @@
+'use strict';
 var expect = require('expect.js');
 var SokobanLogic = require('../sokobanlogic.js').SokobanLogic;
 

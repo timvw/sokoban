@@ -1,4 +1,6 @@
 (function($) {
+    'use strict';
+
 	$.fn.sokoban = function(options) {
     	var settings = $.extend( {
 			'gamesUrl' : './js/icteam/games.json',

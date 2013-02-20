@@ -1,4 +1,6 @@
 (function(){
+    'use strict';
+
     function Sokoban(games, gameDiv, imagesUrl, gameUrl){
         this.sokobanLogic = new SokobanLogic();
         this.games = games;
